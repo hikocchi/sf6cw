@@ -400,6 +400,28 @@ export const ryuComboParts: ComboPart[] = [
    damage: 3280,
    frameAdvantage: 32,
   },
+   {
+   id: 'ryu-041',
+   character: 'リュウ',
+   name: 'リーサルコンボ１',
+   comboparts: '（カウンター）弱波掌 ＞ R ＞ 屈中P ＞ CR ＞ 引強K ＞ CR ＞ 引強K ＞ 強昇竜 ＞ SA3',
+   videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-041.mp4',
+   tags: ['位置:どこでも', '状況:+14F', '締め:SA3'],
+   order: 360,
+   damage: 5080,
+   frameAdvantage: 14,
+  },
+   {
+   id: 'ryu-042',
+   character: 'リュウ',
+   name: '強Kパニカン始動４',
+   comboparts: '立強K(パニカン) ＞ 立強P ＞ CR ＞ 立強K ＞ 立強P ＞ CR ＞ 立強K ＞ 立強K ＞ SA1',
+   videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-042.mp4',
+   tags: ['位置:どこでも', '状況:+26F', '締め:SA1'],
+   order: 360,
+   damage: 4481,
+   frameAdvantage: 26,
+  },
 ];
 
 export const ryuSampleCombos = [
