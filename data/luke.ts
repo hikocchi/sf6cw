@@ -1,0 +1,22 @@
+import type { ComboPart } from '../index.tsx';
+
+export const lukeComboParts: ComboPart[] = [
+  {
+    id: 'luke-001',
+    character: 'ルーク',
+    name: 'luke-001',
+    comboparts: 'サンドブラスト',
+    videoUrl: 'https://www.streetfighter.com/6/character/luke/frame/special#SandBlast',
+    tags: ['starter', 'projectile'],
+    order: 10,
+  },
+  {
+    id: 'luke-002',
+    character: 'ルーク',
+    name: 'luke-002',
+    comboparts: 'ODフラッシュナックル',
+    videoUrl: 'https://www.streetfighter.com/6/character/luke/frame/special#ODFlashKnuckle',
+    tags: ['combo-filler', 'od'],
+    order: 20,
+  },
+];
