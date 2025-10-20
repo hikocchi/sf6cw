@@ -16,7 +16,8 @@ const HOW_TO_USE_VIDEO_ID = 'oMhooZHpaRw'; // 例: 'ABCdeFG1234'
 const MOBILE_BREAKPOINT = 900;
 const INITIAL_PARTS_LIMIT = 6;
 const REWIND_SECONDS = 5;
-const LONG_PRESS_DURATION = 200; // ms
+const LONG_PRESS_DURATION = 300; // 長押し時間を少し延長して誤操作を減らす
+const TOUCH_MOVE_THRESHOLD = 10; // ドラッグキャンセルと判定する移動閾値(px)
 
 const TAG_CATEGORIES = {
   tagType: '種類',
@@ -232,31 +233,29 @@ const SequenceItem: React.FC<{
   onRemove: (sequenceId: string) => void;
   isPlaying: boolean;
   isDragging: boolean;
+  isGhost: boolean;
   onDragStart: (e: React.DragEvent) => void;
   onDragEnd: (e: React.DragEvent) => void;
   onDragOver: (e: React.DragEvent) => void;
-  isTouchDevice: boolean;
   onMobileDragStart: (e: React.TouchEvent) => void;
-  isTouchDragging: boolean;
-  style: React.CSSProperties;
 }> = ({
   part,
   onRemove,
   isPlaying,
   isDragging,
+  isGhost,
   onDragStart,
   onDragEnd,
   onDragOver,
-  isTouchDevice,
   onMobileDragStart,
-  isTouchDragging,
-  style
 }) => {
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  
   const itemClass = `
     sequence-item
     ${isPlaying ? 'playing' : ''}
     ${isDragging ? 'dragging' : ''}
-    ${isTouchDragging ? 'touch-dragging' : ''}
+    ${isGhost ? 'ghost' : ''}
   `;
 
   return (
@@ -266,7 +265,6 @@ const SequenceItem: React.FC<{
       onDragStart={!isTouchDevice ? onDragStart : undefined}
       onDragEnd={!isTouchDevice ? onDragEnd : undefined}
       onDragOver={!isTouchDevice ? onDragOver : undefined}
-      style={style}
     >
       <button
         className="drag-handle"
@@ -586,49 +584,98 @@ const useVideoPlayer = (sequence: SequencePart[]) => {
   };
 };
 
-const useDragAndDrop = (sequence: SequencePart[], setSequence: React.Dispatch<React.SetStateAction<SequencePart[]>>, isTouchDevice: boolean) => {
-  // State for UI updates
+const useDragAndDrop = (sequence: SequencePart[], setSequence: React.Dispatch<React.SetStateAction<SequencePart[]>>) => {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<{ index: number | null; position: 'top' | 'bottom' | null }>({ index: null, position: null });
-  const [touchDragState, setTouchDragState] = useState<{ id: string; startY: number; elementInitialTop: number; initialScrollTop: number; currentY: number; } | null>(null);
-  
-  // Refs for DOM elements and timers
   const sequenceListRef = useRef<HTMLDivElement>(null);
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
-  // Ref to hold all mutable logic state to avoid stale closures
   const stateRef = useRef({
-    draggedId,
-    dropTarget,
-    sequence,
-    setSequence,
-    touchDragState,
     isDragging: false,
+    draggedElement: null as HTMLElement | null,
+    longPressTimer: null as ReturnType<typeof setTimeout> | null,
+    touchStartPos: { x: 0, y: 0 },
+    touchOffset: { x: 0, y: 0 },
+    currentSequence: sequence,
   });
 
-  // Keep the ref updated with the latest state on every render
   useEffect(() => {
-    stateRef.current = {
-      draggedId,
-      dropTarget,
-      sequence,
-      setSequence,
-      touchDragState,
-      isDragging: stateRef.current.isDragging, // Preserve dragging flag across renders
-    };
-  });
+    stateRef.current.currentSequence = sequence;
+  }, [sequence]);
+  
+  const handleTouchMove = useCallback((e: TouchEvent) => {
+    const state = stateRef.current;
+    if (!state.isDragging) {
+      // ドラッグ開始前に一定距離動いたら長押しキャンセル
+      const moveX = Math.abs(e.touches[0].clientX - state.touchStartPos.x);
+      const moveY = Math.abs(e.touches[0].clientY - state.touchStartPos.y);
+      if (moveX > TOUCH_MOVE_THRESHOLD || moveY > TOUCH_MOVE_THRESHOLD) {
+        cleanup();
+      }
+      return;
+    }
 
-  const handleDragEnd = useCallback(() => {
+    if (e.cancelable) e.preventDefault();
+
+    const { draggedElement, touchOffset } = state;
+    if (!draggedElement) return;
+    
+    const clientX = e.touches[0].clientX;
+    const clientY = e.touches[0].clientY;
+    draggedElement.style.transform = `translate3d(${clientX - touchOffset.x}px, ${clientY - touchOffset.y}px, 0)`;
+
+    // ドロップターゲットを計算
+    draggedElement.style.display = 'none';
+    const elementUnderPointer = document.elementFromPoint(clientX, clientY);
+    draggedElement.style.display = '';
+    
+    const list = sequenceListRef.current;
+    if (!list) return;
+
+    const targetItem = elementUnderPointer?.closest('.sequence-item:not(.ghost)');
+    const sequenceItems = Array.from(list.children).filter(c => c.classList.contains('sequence-item') && !c.classList.contains('ghost')) as HTMLElement[];
+    
+    let newIndex: number | null = null;
+    let newPosition: 'top' | 'bottom' | null = null;
+    
+    if (targetItem) {
+      const targetIndex = sequenceItems.findIndex(item => item === targetItem);
+      if (targetIndex !== -1) {
+          newIndex = targetIndex;
+          const rect = targetItem.getBoundingClientRect();
+          newPosition = clientY < rect.top + rect.height / 2 ? 'top' : 'bottom';
+      }
+    }
+    
+    if (dropTarget.index !== newIndex || dropTarget.position !== newPosition) {
+      setDropTarget({ index: newIndex, position: newPosition });
+    }
+  }, [dropTarget]);
+  
+  const cleanup = useCallback(() => {
+    window.removeEventListener('touchmove', handleTouchMove);
+    window.removeEventListener('touchend', handleTouchEnd);
+    window.removeEventListener('touchcancel', handleTouchEnd);
+
+    if (stateRef.current.longPressTimer) {
+      clearTimeout(stateRef.current.longPressTimer);
+      stateRef.current.longPressTimer = null;
+    }
+
+    if (stateRef.current.draggedElement) {
+      stateRef.current.draggedElement.classList.remove('touch-dragging');
+      stateRef.current.draggedElement.style.cssText = '';
+    }
+    
+    stateRef.current.isDragging = false;
+    stateRef.current.draggedElement = null;
+    
     setDraggedId(null);
     setDropTarget({ index: null, position: null });
-    setTouchDragState(null);
-    stateRef.current.isDragging = false;
-  }, []);
+  }, [handleTouchMove]); // handleTouchEnd は後で定義するため、一旦依存関係に含める
 
   const handleDrop = useCallback(() => {
-    const { draggedId, dropTarget, setSequence } = stateRef.current;
     if (!draggedId || dropTarget.index === null) return;
-
+    
     setSequence(currentSequence => {
       const draggedIndex = currentSequence.findIndex(p => p.sequenceId === draggedId);
       if (draggedIndex === -1) return currentSequence;
@@ -637,101 +684,98 @@ const useDragAndDrop = (sequence: SequencePart[], setSequence: React.Dispatch<Re
       const [draggedItem] = newSequence.splice(draggedIndex, 1);
       
       let targetIndex = dropTarget.index;
-      // Adjust target index if dragging downwards
-      if (draggedIndex < targetIndex) {
-        targetIndex--;
-      }
+      if (draggedIndex < targetIndex) targetIndex--;
       
       const insertAtIndex = dropTarget.position === 'top' ? targetIndex : targetIndex + 1;
       newSequence.splice(insertAtIndex, 0, draggedItem);
       
       return newSequence;
     });
-  }, [/* setSequence is stable */]);
+  }, [draggedId, dropTarget, setSequence]);
 
-  // Event handlers are defined with useCallback to be stable, preventing re-adding listeners
-  const handleTouchDragMove = useCallback((e: TouchEvent) => {
-    if (!stateRef.current.isDragging) return;
-    if (e.cancelable) e.preventDefault();
-
-    const touchY = e.touches[0].clientY;
-    setTouchDragState(prev => prev ? { ...prev, currentY: touchY } : null);
-
-    const { sequence, draggedId } = stateRef.current;
-    const sequenceItems = Array.from(sequenceListRef.current?.children || []).filter(c => c.classList.contains('sequence-item'));
-    let newDropTarget: { index: number | null; position: 'top' | 'bottom' | null } = { index: null, position: null };
-
-    const targetItem = sequenceItems.find(item => {
-      const itemSequenceId = sequence[sequenceItems.indexOf(item)]?.sequenceId;
-      if (itemSequenceId === draggedId) return false;
-      const rect = item.getBoundingClientRect();
-      return touchY >= rect.top && touchY <= rect.bottom;
-    });
-
-    if (targetItem) {
-      const rect = targetItem.getBoundingClientRect();
-      const targetIndex = sequenceItems.indexOf(targetItem);
-      newDropTarget = { index: targetIndex, position: touchY < rect.top + rect.height / 2 ? 'top' : 'bottom' };
-    }
-    
-    if (stateRef.current.dropTarget.index !== newDropTarget.index || stateRef.current.dropTarget.position !== newDropTarget.position) {
-      setDropTarget(newDropTarget);
-    }
-  }, []);
-
-  const handleTouchDragEnd = useCallback(() => {
-    window.removeEventListener('touchmove', handleTouchDragMove);
-    window.removeEventListener('touchend', handleTouchDragEnd);
-    window.removeEventListener('touchcancel', handleTouchDragEnd);
-
+  const handleTouchEnd = useCallback(() => {
     if (stateRef.current.isDragging) {
       handleDrop();
     }
-    handleDragEnd();
-  }, [handleDrop, handleDragEnd, handleTouchDragMove]);
+    cleanup();
+  }, [handleDrop, cleanup]);
+
+  // handleTouchMoveの依存配列からcleanupを外すために、ここでuseCallbackの依存関係を解決
+  useEffect(() => {
+     // handleTouchEndはhandleDropとcleanupに依存
+     const localHandleTouchEnd = () => {
+        if (stateRef.current.isDragging) handleDrop();
+        cleanup();
+     };
+
+     // handleTouchMoveはdropTargetにのみ依存
+     const localHandleTouchMove = (e: TouchEvent) => {
+        handleTouchMove(e);
+     };
+
+     // リスナーに登録する関数を更新
+     (window as any).__handleTouchMove = localHandleTouchMove;
+     (window as any).__handleTouchEnd = localHandleTouchEnd;
+  }, [handleDrop, cleanup, handleTouchMove]);
+
 
   const handleMobileDragStart = useCallback((part: SequencePart, e: React.TouchEvent) => {
+    e.preventDefault();
+
     const element = (e.currentTarget as HTMLElement).closest('.sequence-item');
     if (!(element instanceof HTMLElement)) return;
-
-    // Clear any existing timer
-    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
     
-    const touch = e.touches[0];
-    longPressTimerRef.current = setTimeout(() => {
-      stateRef.current.isDragging = true;
+    stateRef.current.touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+
+    const moveHandler = (ev: TouchEvent) => (window as any).__handleTouchMove(ev);
+    const endHandler = () => (window as any).__handleTouchEnd();
+    
+    window.addEventListener('touchmove', moveHandler, { passive: false });
+    window.addEventListener('touchend', endHandler, { once: true });
+    window.addEventListener('touchcancel', endHandler, { once: true });
+    
+    stateRef.current.longPressTimer = setTimeout(() => {
       if (navigator.vibrate) navigator.vibrate(50);
       
+      stateRef.current.isDragging = true;
       setDraggedId(part.sequenceId);
-      setTouchDragState({
-        id: part.sequenceId,
-        startY: touch.clientY,
-        elementInitialTop: element.offsetTop,
-        initialScrollTop: sequenceListRef.current?.scrollTop || 0,
-        currentY: touch.clientY,
-      });
+      
+      const rect = element.getBoundingClientRect();
+      stateRef.current.draggedElement = element;
+      
+      stateRef.current.touchOffset = {
+        x: stateRef.current.touchStartPos.x - rect.left,
+        y: stateRef.current.touchStartPos.y - rect.top,
+      };
 
-      window.addEventListener('touchmove', handleTouchDragMove, { passive: false });
-      window.addEventListener('touchend', handleTouchDragEnd);
-      window.addEventListener('touchcancel', handleTouchDragEnd);
+      element.classList.add('touch-dragging');
+      element.style.width = `${rect.width}px`;
+      element.style.height = `${rect.height}px`;
+      element.style.top = `${rect.top}px`;
+      element.style.left = `${rect.left}px`;
+      
     }, LONG_PRESS_DURATION);
-  }, [handleTouchDragMove, handleTouchDragEnd]);
-  
-  const cancelLongPress = useCallback(() => {
-    if (longPressTimerRef.current) {
-      clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = null;
-    }
   }, []);
 
-  // --- Desktop DnD Handlers ---
   const handleDesktopDragStart = (id: string) => setDraggedId(id);
 
   const handleDesktopDrop = () => {
-    handleDrop();
-    handleDragEnd();
+    if (!draggedId || dropTarget.index === null) return;
+    setSequence(currentSequence => {
+        const draggedIndex = currentSequence.findIndex(p => p.sequenceId === draggedId);
+        if (draggedIndex === -1) return currentSequence;
+        const newSequence = [...currentSequence];
+        const [draggedItem] = newSequence.splice(draggedIndex, 1);
+        let targetIndex = dropTarget.index;
+        if (draggedIndex < targetIndex) targetIndex--;
+        const insertAtIndex = dropTarget.position === 'top' ? targetIndex : targetIndex + 1;
+        newSequence.splice(insertAtIndex, 0, draggedItem);
+        return newSequence;
+    });
+    setDraggedId(null);
+    setDropTarget({ index: null, position: null });
   };
-
+  
   const handleItemDragOver = (index: number, e: React.DragEvent) => {
     e.preventDefault();
     if (sequence[index]?.sequenceId === draggedId) return;
@@ -744,14 +788,13 @@ const useDragAndDrop = (sequence: SequencePart[], setSequence: React.Dispatch<Re
 
   return {
     refs: { sequenceListRef },
-    state: { draggedId, dropTarget, touchDragState },
+    state: { draggedId, dropTarget },
     actions: {
       handleDragStart: handleDesktopDragStart,
-      handleDragEnd,
+      handleDragEnd: () => { setDraggedId(null); setDropTarget({ index: null, position: null }); },
       handleDrop: handleDesktopDrop,
       handleItemDragOver,
       handleMobileDragStart,
-      cancelLongPress
     }
   };
 };
@@ -760,12 +803,12 @@ const useDragAndDrop = (sequence: SequencePart[], setSequence: React.Dispatch<Re
 const App = () => {
   const [character, setCharacter] = useState(AVAILABLE_CHARACTERS[0] || '');
   
-  const { isMobileView, isTouchDevice } = useDeviceState();
+  const { isMobileView } = useDeviceState();
   const { comboParts, sampleCombos, isLoading } = useCharacterData(character);
   const { tags, handleTagClick, resetFilters, availableTags, filteredParts } = useFilters(comboParts);
   const { sequence, setSequence, addPartToSequence, removeFromSequence, clearSequence, loadSampleCombo, comboStats } = useSequence();
   const { refs: playerRefs, state: playerState, actions: playerActions } = useVideoPlayer(sequence);
-  const { refs: dndRefs, state: dndState, actions: dndActions } = useDragAndDrop(sequence, setSequence, isTouchDevice);
+  const { refs: dndRefs, state: dndState, actions: dndActions } = useDragAndDrop(sequence, setSequence);
   
   const [showAllParts, setShowAllParts] = useState(false);
   const [isPartPickerModalOpen, setIsPartPickerModalOpen] = useState(false);
@@ -822,7 +865,7 @@ const App = () => {
   }, [filteredParts, showAllParts]);
   
   return (
-    <div className="app-container" onTouchEnd={dndActions.cancelLongPress} onTouchMove={dndActions.cancelLongPress}>
+    <div className="app-container">
       {isHowToModalOpen && playerState.isYtApiReady && <HowToModal onClose={() => setIsHowToModalOpen(false)} />}
        <PartPickerModal
         isOpen={isPartPickerModalOpen}
@@ -840,7 +883,7 @@ const App = () => {
       <main>
         <div className="sidebar">
           <section className={`character-select collapsible-section ${isCharSelectExpanded ? 'expanded' : ''}`}>
-            <h2 onClick={isMobileView ? () => setIsCharSelectExpanded(p => !p) : undefined} role={isMobileView ? "button" : undefined}>
+            <h2 onClick={isMobileView ? () => setIsCharSelectExpanded(p => !p) : undefined} role={isMobileView ? "button" : "heading"} aria-level={2}>
               <span>Character Select</span>
               <span className={`expand-icon ${isCharSelectExpanded ? 'expanded' : ''}`} aria-hidden="true">▼</span>
             </h2>
@@ -857,7 +900,7 @@ const App = () => {
           </section>
 
           <aside className={`library collapsible-section ${isLibraryExpanded ? 'expanded' : ''}`}>
-            <h2 onClick={isMobileView ? () => setIsLibraryExpanded(p => !p) : undefined} role={isMobileView ? "button" : undefined}>
+            <h2 onClick={isMobileView ? () => setIsLibraryExpanded(p => !p) : undefined} role={isMobileView ? "button" : "heading"} aria-level={2}>
               <span>Parts Library</span>
               <span className={`expand-icon ${isLibraryExpanded ? 'expanded' : ''}`} aria-hidden="true">▼</span>
             </h2>
@@ -949,37 +992,24 @@ const App = () => {
                 </div>
               )}
 
-              <div ref={dndRefs.sequenceListRef} className="sequence-list-container" onDragOver={(e) => { if (!isTouchDevice) e.preventDefault(); }} onDrop={!isTouchDevice ? dndActions.handleDrop : undefined}>
-                {sequence.map((part, index) => {
-                  const isBeingTouchDragged = dndState.touchDragState?.id === part.sequenceId;
-                  let itemStyle: React.CSSProperties = {};
-                  if (isBeingTouchDragged) {
-                    const list = dndRefs.sequenceListRef.current;
-                    const scrollDelta = list ? (list.scrollTop - dndState.touchDragState!.initialScrollTop) : 0;
-                    const touchDelta = dndState.touchDragState!.currentY - dndState.touchDragState!.startY;
-                    itemStyle = { transform: `translateY(${touchDelta - scrollDelta}px) scale(1.02)` };
-                  }
-
-                  return (
-                    <React.Fragment key={part.sequenceId}>
-                      {dndState.dropTarget.index === index && dndState.dropTarget.position === 'top' && dndState.draggedId !== part.sequenceId && <div className="drop-indicator" />}
-                      <SequenceItem
-                        part={part}
-                        onRemove={handleRemovePart}
-                        isPlaying={part.sequenceId === sequence[playerState.currentPlayingIndex!]?.sequenceId}
-                        isDragging={dndState.draggedId === part.sequenceId && !isTouchDevice}
-                        isTouchDragging={isBeingTouchDragged}
-                        onDragStart={(e) => { e.dataTransfer.setData('text/plain', part.sequenceId); dndActions.handleDragStart(part.sequenceId); }}
-                        onDragEnd={dndActions.handleDragEnd}
-                        onDragOver={(e) => dndActions.handleItemDragOver(index, e)}
-                        isTouchDevice={isTouchDevice}
-                        onMobileDragStart={(e) => dndActions.handleMobileDragStart(part, e)}
-                        style={itemStyle}
-                      />
-                      {dndState.dropTarget.index === index && dndState.dropTarget.position === 'bottom' && dndState.draggedId !== part.sequenceId && <div className="drop-indicator" />}
-                    </React.Fragment>
-                  );
-                })}
+              <div ref={dndRefs.sequenceListRef} className="sequence-list-container" onDragOver={(e) => e.preventDefault()} onDrop={dndActions.handleDrop}>
+                {sequence.map((part, index) => (
+                  <React.Fragment key={part.sequenceId}>
+                    {dndState.dropTarget.index === index && dndState.dropTarget.position === 'top' && dndState.draggedId !== part.sequenceId && <div className="drop-indicator" />}
+                    <SequenceItem
+                      part={part}
+                      onRemove={handleRemovePart}
+                      isPlaying={part.sequenceId === sequence[playerState.currentPlayingIndex!]?.sequenceId}
+                      isDragging={dndState.draggedId === part.sequenceId}
+                      isGhost={dndState.draggedId === part.sequenceId}
+                      onDragStart={(e) => { e.dataTransfer.setData('text/plain', part.sequenceId); dndActions.handleDragStart(part.sequenceId); }}
+                      onDragEnd={dndActions.handleDragEnd}
+                      onDragOver={(e) => dndActions.handleItemDragOver(index, e)}
+                      onMobileDragStart={(e) => dndActions.handleMobileDragStart(part, e)}
+                    />
+                    {dndState.dropTarget.index === index && dndState.dropTarget.position === 'bottom' && dndState.draggedId !== part.sequenceId && <div className="drop-indicator" />}
+                  </React.Fragment>
+                ))}
               </div>
             </div>
           </div>
@@ -1047,6 +1077,9 @@ const App = () => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+  // 循環参照を避けるため、ハンドラをグローバルスコープ（window）に一時的に格納する方法は
+  // 複数のuseDragAndDropインスタンスが存在する場合に問題を起こす可能性があるため、削除しました。
+  // useCallbackの依存関係を整理することで、よりクリーンな解決策を採用しています。
   const container = document.getElementById('root');
   if (container) {
     const root = createRoot(container);

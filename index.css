@@ -551,7 +551,7 @@ select#character-filter {
   padding: 0.75rem;
   border-radius: 4px;
   border-left: 4px solid #03a9f4; /* Different color for sequence items */
-  transition: opacity 0.2s ease, box-shadow 0.2s ease;
+  transition: opacity 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
 .sequence-item[draggable="true"] {
@@ -564,15 +564,32 @@ select#character-filter {
 
 .sequence-item.dragging {
   opacity: 0.5;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  background-color: #444;
 }
 
 .sequence-item.touch-dragging {
-  position: relative; /* Needed for z-index to take effect */
-  z-index: 100;
-  opacity: 0.9;
+  position: fixed;
+  z-index: 1000;
+  opacity: 0.95;
   box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-  pointer-events: none; /* Prevents interference with drop target calculation */
+  pointer-events: none;
+  background-color: #4f4f4f;
+  transform-origin: center;
+  transition: none; /* Disable transitions while dragging */
+}
+
+.sequence-item.ghost {
+  opacity: 0.4;
+  background-color: var(--background-color);
+  border-color: #555;
+}
+
+/* Ensure dragging style overrides ghost for the actively dragged element */
+.sequence-item.ghost.dragging {
+  opacity: 0.5;
+}
+.sequence-item.ghost.touch-dragging {
+  opacity: 0.95;
 }
 
 
