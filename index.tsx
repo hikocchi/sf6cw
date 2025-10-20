@@ -260,7 +260,7 @@ const SequenceItem: React.FC<{
   `;
 
   return (
-    <div 
+    <div
       className={itemClass}
       draggable={!isTouchDevice}
       onDragStart={!isTouchDevice ? onDragStart : undefined}
@@ -316,7 +316,13 @@ const App = () => {
   const [isPartPickerModalOpen, setIsPartPickerModalOpen] = useState(false);
   const [dropTarget, setDropTarget] = useState<{ index: number | null; position: 'top' | 'bottom' | null }>({ index: null, position: null });
   const [activeLibraryTab, setActiveLibraryTab] = useState<'parts' | 'samples'>('parts');
-  const [touchDragState, setTouchDragState] = useState<{ id: string; startY: number; currentY: number; } | null>(null);
+  const [touchDragState, setTouchDragState] = useState<{
+    id: string;
+    startY: number;
+    elementInitialTop: number;
+    initialScrollTop: number;
+    currentY: number;
+  } | null>(null);
 
   const isTouchDevice = useMemo(() => 'ontouchstart' in window || navigator.maxTouchPoints > 0, []);
 
@@ -326,6 +332,9 @@ const App = () => {
   const ytTimeCheckIntervalRef = useRef<number | null>(null);
   const sequenceListRef = useRef<HTMLDivElement>(null);
   const longPressTimerRef = useRef<number>();
+  // FIX: Changed `touch: Touch` to `touch: React.Touch` to match the event object from React.
+  const touchStartInfoRef = useRef<{ part: SequencePart; element: HTMLElement; touch: React.Touch; } | null>(null);
+
 
   const isSequencePausedRef = useRef(isSequencePaused);
   useEffect(() => {
@@ -664,22 +673,36 @@ const App = () => {
     setTouchDragState(null);
   }, [draggedId, dropTarget, handleDrop, handleDragEnd, handleTouchDragMove]);
 
-  const initTouchDrag = useCallback((part: SequencePart, e: React.TouchEvent) => {
+  const initTouchDrag = useCallback(() => {
+    if (!touchStartInfoRef.current) return;
+    const { part, element, touch } = touchStartInfoRef.current;
+    const list = sequenceListRef.current;
+    if (!list) return;
+
     handleDragStart(part.sequenceId);
     setTouchDragState({
         id: part.sequenceId,
-        startY: e.touches[0].clientY,
-        currentY: e.touches[0].clientY,
+        startY: touch.clientY,
+        elementInitialTop: element.offsetTop,
+        initialScrollTop: list.scrollTop,
+        currentY: touch.clientY,
     });
+
     window.addEventListener('touchmove', handleTouchDragMove, { passive: false });
     window.addEventListener('touchend', handleTouchDragEnd);
     window.addEventListener('touchcancel', handleTouchDragEnd);
   }, [handleDragStart, handleTouchDragMove, handleTouchDragEnd]);
-  
+
   const handleMobileDragStart = (part: SequencePart, e: React.TouchEvent) => {
-    e.persist();
+    const element = (e.currentTarget as HTMLElement).closest('.sequence-item');
+    // FIX: Ensure the found element is an HTMLElement instance before proceeding.
+    if (!(element instanceof HTMLElement)) {
+      return;
+    }
+    touchStartInfoRef.current = { part, element, touch: e.touches[0] };
+
     clearTimeout(longPressTimerRef.current);
-    longPressTimerRef.current = window.setTimeout(() => initTouchDrag(part, e), LONG_PRESS_DURATION);
+    longPressTimerRef.current = window.setTimeout(initTouchDrag, LONG_PRESS_DURATION);
   };
   
   const cancelLongPress = () => {
@@ -1008,6 +1031,7 @@ const App = () => {
                   <button onClick={handleRewind} disabled={currentPlayingIndex === null}>Rewind 5s</button>
                   {/* FIX: The "Stop" button should call `hardStopSequence` to actually stop playback, not just pause it.
                       The disabled logic is also corrected to allow stopping while paused. */}
+                  <button onClick={handlePause} disabled={currentPlayingIndex === null || isSequencePaused}>Pause</button>
                   <button onClick={hardStopSequence} disabled={currentPlayingIndex === null}>Stop</button>
                 </div>
                 <button 
@@ -1047,10 +1071,14 @@ const App = () => {
                   const isBeingTouchDragged = touchDragState?.id === part.sequenceId;
                   let itemStyle: React.CSSProperties = {};
                   if (isBeingTouchDragged) {
-                    const deltaY = touchDragState!.currentY - touchDragState!.startY;
+                    const list = sequenceListRef.current;
+                    const currentScrollTop = list ? list.scrollTop : touchDragState.initialScrollTop;
+                    const scrollDelta = currentScrollTop - touchDragState.initialScrollTop;
+                    const touchDelta = touchDragState.currentY - touchDragState.startY;
+                    const transformY = touchDelta - scrollDelta;
+                    
                     itemStyle = {
-                      transform: `translateY(${deltaY}px)`,
-                      pointerEvents: 'none',
+                      transform: `translateY(${transformY}px) scale(1.02)`,
                     };
                   }
 
