@@ -465,11 +465,13 @@ const App = () => {
 
   const handleRemoveFromSequence = (sequenceId: string) => {
     hardStopSequence();
+    setMobileDraggedId(null);
     setSequence(prev => prev.filter(p => p.sequenceId !== sequenceId));
   };
   
   const handleClearSequence = () => {
     hardStopSequence();
+    setMobileDraggedId(null);
     setSequence([]);
   };
   
@@ -598,26 +600,32 @@ const App = () => {
   };
   
   // Mobile Touch D&D
-  const handleMobileDragHandleClick = (id: string) => {
-    setMobileDraggedId(prevId => (prevId === id ? null : id));
-  };
-  
-  const handleMobileDrop = (targetIndex: number) => {
-    if (!mobileDraggedId) return;
+  const handleMobileDragHandleClick = (clickedId: string) => {
+    // If an item is already selected for moving, and we clicked a *different* item
+    if (mobileDraggedId && mobileDraggedId !== clickedId) {
+      const currentSequence = [...sequence];
+      const draggedIndex = currentSequence.findIndex(p => p.sequenceId === mobileDraggedId);
+      let targetIndex = currentSequence.findIndex(p => p.sequenceId === clickedId);
 
-    const currentSequence = [...sequence];
-    const draggedIndex = currentSequence.findIndex(p => p.sequenceId === mobileDraggedId);
-    if (draggedIndex === -1) return;
+      if (draggedIndex === -1 || targetIndex === -1) return;
 
-    const [draggedItem] = currentSequence.splice(draggedIndex, 1);
-    
-    // Adjust target index if the item was moved from before the target
-    const insertAtIndex = draggedIndex < targetIndex ? targetIndex - 1 : targetIndex;
-
-    currentSequence.splice(insertAtIndex, 0, draggedItem);
-
-    setSequence(currentSequence);
-    setMobileDraggedId(null);
+      // Remove the dragged item
+      const [draggedItem] = currentSequence.splice(draggedIndex, 1);
+      
+      // After splice, the targetIndex might need adjustment if the dragged item was before it
+      if (draggedIndex < targetIndex) {
+        targetIndex--;
+      }
+      
+      // Insert the dragged item before the target item
+      currentSequence.splice(targetIndex, 0, draggedItem);
+      
+      setSequence(currentSequence);
+      setMobileDraggedId(null); // Finish the drag operation
+    } else {
+      // If no item is selected, or we clicked the same item again, just toggle selection
+      setMobileDraggedId(prevId => (prevId === clickedId ? null : clickedId));
+    }
   };
 
 
@@ -974,9 +982,6 @@ const App = () => {
                 onDragOver={(e) => { if (!isTouchDevice) e.preventDefault(); }}
                 onDrop={!isTouchDevice ? handleDrop : undefined}
               >
-                {isTouchDevice && mobileDraggedId && (
-                  <div className="drop-indicator mobile" onClick={() => handleMobileDrop(0)} />
-                )}
                 {sequence.map((part, index) => (
                   <React.Fragment key={part.sequenceId}>
                     {!isTouchDevice && dropTarget.index === index && dropTarget.position === 'top' && (
@@ -996,9 +1001,6 @@ const App = () => {
                     />
                     {!isTouchDevice && dropTarget.index === index && dropTarget.position === 'bottom' && (
                        <div className="drop-indicator" />
-                    )}
-                    {isTouchDevice && mobileDraggedId && (
-                      <div className="drop-indicator mobile" onClick={() => handleMobileDrop(index + 1)} />
                     )}
                   </React.Fragment>
                 ))}
