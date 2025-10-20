@@ -19,8 +19,8 @@ const REWIND_SECONDS = 5;
 
 const TAG_CATEGORIES = {
   tagType: '種類',
-  tagSituation: '状況',
   tagCondition: '条件',
+  startCondition: '開始条件',
   tagDriveGauge: 'Dゲージ',
   tagSaGauge: 'SAゲージ'
 } as const;
@@ -36,11 +36,11 @@ export interface ComboPart {
   videoUrl: string;
   order: number;
   damage?: number;
-  frameAdvantage?: number;
+  endFrameAdvantage?: number;
   startTime?: number;
   endTime?: number;
   tagType?: string;
-  tagSituation?: string;
+  startCondition?: string;
   tagCondition?: string[];
   tagDriveGauge?: string;
   tagSaGauge?: string;
@@ -116,7 +116,7 @@ const PartPickerModal: React.FC<{
   const getPartTags = (part: ComboPart) => {
     return [
       part.tagType,
-      part.tagSituation,
+      part.startCondition,
       ...(part.tagCondition || []),
       part.tagDriveGauge && `D: ${part.tagDriveGauge}`,
       part.tagSaGauge && `SA: ${part.tagSaGauge}`
@@ -167,7 +167,7 @@ const PartPickerModal: React.FC<{
 const PartCard: React.FC<{ part: ComboPart; onPartClick: (part: ComboPart) => void; }> = ({ part, onPartClick }) => {
   const partTags = [
     part.tagType,
-    part.tagSituation,
+    part.startCondition,
     ...(part.tagCondition || []),
     part.tagDriveGauge && `D: ${part.tagDriveGauge}`,
     part.tagSaGauge && `SA: ${part.tagSaGauge}`
@@ -192,12 +192,12 @@ const PartCard: React.FC<{ part: ComboPart; onPartClick: (part: ComboPart) => vo
             💥 {part.damage}
           </span>
         )}
-        {part.frameAdvantage != null && (
+        {part.endFrameAdvantage != null && (
           <span
-            className={`info-item frame-advantage ${part.frameAdvantage >= 0 ? 'positive' : 'negative'}`}
-            aria-label={`Frame advantage: ${part.frameAdvantage}`}
+            className={`info-item frame-advantage ${part.endFrameAdvantage >= 0 ? 'positive' : 'negative'}`}
+            aria-label={`Frame advantage: ${part.endFrameAdvantage}`}
           >
-            ⏰ {part.frameAdvantage > 0 ? `+${part.frameAdvantage}` : part.frameAdvantage}
+            ⏰ {part.endFrameAdvantage > 0 ? `+${part.endFrameAdvantage}` : part.endFrameAdvantage}
           </span>
         )}
       </div>
@@ -213,15 +213,39 @@ const SequenceItem: React.FC<{
   onDragStart: () => void;
   onDragEnd: () => void;
   onDragOver: (e: React.DragEvent) => void;
-}> = ({ part, onRemove, isPlaying, isDragging, onDragStart, onDragEnd, onDragOver }) => {
+  isTouchDevice: boolean;
+  onMobileDragHandleClick: (id: string) => void;
+  isMobileDragging: boolean;
+}> = ({
+  part,
+  onRemove,
+  isPlaying,
+  isDragging,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  isTouchDevice,
+  onMobileDragHandleClick,
+  isMobileDragging
+}) => {
   return (
     <div 
-      className={`sequence-item ${isPlaying ? 'playing' : ''} ${isDragging ? 'dragging' : ''}`}
-      draggable
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-      onDragOver={onDragOver}
+      className={`sequence-item ${isPlaying ? 'playing' : ''} ${isDragging ? 'dragging' : ''} ${isMobileDragging ? 'mobile-dragging' : ''}`}
+      draggable={!isTouchDevice}
+      onDragStart={!isTouchDevice ? onDragStart : undefined}
+      onDragEnd={!isTouchDevice ? onDragEnd : undefined}
+      onDragOver={!isTouchDevice ? onDragOver : undefined}
     >
+      {isTouchDevice && (
+        <button
+          className="drag-handle"
+          onClick={() => onMobileDragHandleClick(part.sequenceId)}
+          aria-label={`Move ${part.comboparts}`}
+          title="Move part"
+        >
+          ⠿
+        </button>
+      )}
       <span>{part.comboparts}</span>
       <div className="item-controls">
         <button onClick={() => onRemove(part.sequenceId)} aria-label={`Remove ${part.comboparts}`} title="Remove part">&times;</button>
@@ -240,8 +264,8 @@ const App = () => {
     character: CHARACTERS[0] || '',
     tags: {
       tagType: new Set<string>(),
-      tagSituation: new Set<string>(),
       tagCondition: new Set<string>(),
+      startCondition: new Set<string>(),
       tagDriveGauge: new Set<string>(),
       tagSaGauge: new Set<string>(),
     }
@@ -256,12 +280,14 @@ const App = () => {
   const [isLibraryExpanded, setIsLibraryExpanded] = useState(true);
   const [isHowToModalOpen, setIsHowToModalOpen] = useState(false);
   const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [mobileDraggedId, setMobileDraggedId] = useState<string | null>(null);
   const [isMobileView, setIsMobileView] = useState(window.innerWidth <= MOBILE_BREAKPOINT);
   const [showAllParts, setShowAllParts] = useState(false);
   const [isPartPickerModalOpen, setIsPartPickerModalOpen] = useState(false);
   const [dropTarget, setDropTarget] = useState<{ index: number | null; position: 'top' | 'bottom' | null }>({ index: null, position: null });
   const [activeLibraryTab, setActiveLibraryTab] = useState<'parts' | 'samples'>('parts');
 
+  const isTouchDevice = useMemo(() => 'ontouchstart' in window || navigator.maxTouchPoints > 0, []);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const ytPlayerRef = useRef<any>(null);
@@ -335,14 +361,14 @@ const App = () => {
   const availableTags = useMemo(() => {
     const categories: { [K in TagCategoryKey]: Set<string> } = {
         tagType: new Set<string>(),
-        tagSituation: new Set<string>(),
         tagCondition: new Set<string>(),
+        startCondition: new Set<string>(),
         tagDriveGauge: new Set<string>(),
         tagSaGauge: new Set<string>(),
     };
     for (const part of comboParts) {
         if (part.tagType) categories.tagType.add(part.tagType);
-        if (part.tagSituation) categories.tagSituation.add(part.tagSituation);
+        if (part.startCondition) categories.startCondition.add(part.startCondition);
         if (part.tagCondition) {
           part.tagCondition.forEach(tag => categories.tagCondition.add(tag));
         }
@@ -358,7 +384,7 @@ const App = () => {
     
     return {
         tagType: [...categories.tagType].sort(),
-        tagSituation: [...categories.tagSituation].sort(),
+        startCondition: [...categories.startCondition].sort(),
         tagCondition: [...categories.tagCondition].sort(),
         tagDriveGauge: [...categories.tagDriveGauge].sort(sortNumerically),
         tagSaGauge: [...categories.tagSaGauge].sort(sortNumerically),
@@ -503,7 +529,9 @@ const App = () => {
   };
 
 
-  // Drag and Drop Handlers
+  // --- Drag and Drop Handlers ---
+
+  // Desktop D&D
   const handleDragStart = (id: string) => {
     setDraggedId(id);
   };
@@ -515,7 +543,6 @@ const App = () => {
 
   const handleItemDragOver = (index: number, e: React.DragEvent) => {
     e.preventDefault();
-    // ドラッグ中のアイテム自身の上ではターゲットを更新しないことで、インジケーターのちらつきを防ぐ
     if (sequence[index]?.sequenceId === draggedId) {
         return;
     }
@@ -548,11 +575,35 @@ const App = () => {
     currentSequence.splice(insertAtIndex, 0, draggedItem);
     setSequence(currentSequence);
   };
+  
+  // Mobile Touch D&D
+  const handleMobileDragHandleClick = (id: string) => {
+    setMobileDraggedId(prevId => (prevId === id ? null : id));
+  };
+  
+  const handleMobileDrop = (targetIndex: number) => {
+    if (!mobileDraggedId) return;
+
+    const currentSequence = [...sequence];
+    const draggedIndex = currentSequence.findIndex(p => p.sequenceId === mobileDraggedId);
+    if (draggedIndex === -1) return;
+
+    const [draggedItem] = currentSequence.splice(draggedIndex, 1);
+    
+    // Adjust target index if the item was moved from before the target
+    const insertAtIndex = draggedIndex < targetIndex ? targetIndex - 1 : targetIndex;
+
+    currentSequence.splice(insertAtIndex, 0, draggedItem);
+
+    setSequence(currentSequence);
+    setMobileDraggedId(null);
+  };
+
 
   // Combo Stats Calculation
   const comboStats = useMemo(() => {
     const totalDamage = sequence.reduce((sum, part) => sum + (part.damage || 0), 0);
-    const finalFrameAdvantage = sequence.length > 0 ? sequence[sequence.length - 1].frameAdvantage : undefined;
+    const finalFrameAdvantage = sequence.length > 0 ? sequence[sequence.length - 1].endFrameAdvantage : undefined;
     return { totalDamage, finalFrameAdvantage };
   }, [sequence]);
 
@@ -899,12 +950,15 @@ const App = () => {
               <div
                 className="sequence-list-container"
                 aria-label="Current combo sequence"
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={handleDrop}
+                onDragOver={(e) => { if (!isTouchDevice) e.preventDefault(); }}
+                onDrop={!isTouchDevice ? handleDrop : undefined}
               >
+                {isTouchDevice && mobileDraggedId && (
+                  <div className="drop-indicator mobile" onClick={() => handleMobileDrop(0)} />
+                )}
                 {sequence.map((part, index) => (
                   <React.Fragment key={part.sequenceId}>
-                    {dropTarget.index === index && dropTarget.position === 'top' && (
+                    {!isTouchDevice && dropTarget.index === index && dropTarget.position === 'top' && (
                        <div className="drop-indicator" />
                     )}
                     <SequenceItem
@@ -915,9 +969,15 @@ const App = () => {
                       onDragStart={() => handleDragStart(part.sequenceId)}
                       onDragEnd={handleDragEnd}
                       onDragOver={(e) => handleItemDragOver(index, e)}
+                      isTouchDevice={isTouchDevice}
+                      onMobileDragHandleClick={handleMobileDragHandleClick}
+                      isMobileDragging={mobileDraggedId === part.sequenceId}
                     />
-                    {dropTarget.index === index && dropTarget.position === 'bottom' && (
+                    {!isTouchDevice && dropTarget.index === index && dropTarget.position === 'bottom' && (
                        <div className="drop-indicator" />
+                    )}
+                    {isTouchDevice && mobileDraggedId && (
+                      <div className="drop-indicator mobile" onClick={() => handleMobileDrop(index + 1)} />
                     )}
                   </React.Fragment>
                 ))}
@@ -946,6 +1006,7 @@ const App = () => {
           <section className="update-history">
             <h3>更新履歴</h3>
             <ul>
+              <li>2025.10.20 - ラシードデータを公開開始。リュウのデータを精査し、修正。モバイル版の表示関連不具合を修正。</li>
               <li>2025.10.18 - 初版公開開始。リュウのデータのみ。控えデータ：ケン、ラシード。</li>
             </ul>
           </section>

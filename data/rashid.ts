@@ -9,7 +9,7 @@ export const rashidComboParts: ComboPart[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/rashid/rashid-001.mp4',
     order: 10,
     damage: 1780,
-    frameAdvantage: 30,
+    endFrameAdvantage: 30,
   },
   {
     id: 'rashid-002',
@@ -19,7 +19,7 @@ export const rashidComboParts: ComboPart[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/rashid/rashid-002.mp4',
     order: 20,
     damage: 2310,
-    frameAdvantage: 52,
+    endFrameAdvantage: 52,
   },
   {
     id: 'rashid-003',
@@ -29,7 +29,7 @@ export const rashidComboParts: ComboPart[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/rashid/rashid-003.mp4',
     order: 30,
     damage: 1090,
-    frameAdvantage: 2,
+    endFrameAdvantage: 2,
   },
   {
     id: 'rashid-004',
@@ -39,7 +39,7 @@ export const rashidComboParts: ComboPart[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/rashid/rashid-004.mp4',
     order: 40,
     damage: 0,
-    frameAdvantage: -6,
+    endFrameAdvantage: -6,
   },
   {
     id: 'rashid-005',
@@ -49,7 +49,7 @@ export const rashidComboParts: ComboPart[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/rashid/rashid-005.mp4',
     order: 50,
     damage: 1777,
-    frameAdvantage: 52,
+    endFrameAdvantage: 52,
   },
   {
     id: 'rashid-006',
@@ -59,7 +59,7 @@ export const rashidComboParts: ComboPart[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/rashid/rashid-006.mp4',
     order: 60,
     damage: 960,
-    frameAdvantage: 6,
+    endFrameAdvantage: 6,
   },
   {
     id: 'rashid-007',
@@ -69,7 +69,7 @@ export const rashidComboParts: ComboPart[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/rashid/rashid-007.mp4',
     order: 70,
     damage: 1690,
-    frameAdvantage: 52,
+    endFrameAdvantage: 52,
   },
   {
     id: 'rashid-008',
@@ -79,7 +79,7 @@ export const rashidComboParts: ComboPart[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/rashid/rashid-008.mp4',
     order: 80,
     damage: 0,
-    frameAdvantage: 1,
+    endFrameAdvantage: 1,
   },
   {
     id: 'rashid-009',
@@ -89,7 +89,7 @@ export const rashidComboParts: ComboPart[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/rashid/rashid-009.mp4',
     order: 90,
     damage: 2720,
-    frameAdvantage: 6,
+    endFrameAdvantage: 6,
   },
   {
     id: 'rashid-010',
@@ -99,7 +99,7 @@ export const rashidComboParts: ComboPart[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/rashid/rashid-010.mp4',
     order: 100,
     damage: 1590,
-    frameAdvantage: 52,
+    endFrameAdvantage: 52,
   },
   {
     id: 'rashid-011',
@@ -109,6 +109,6 @@ export const rashidComboParts: ComboPart[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/rashid/rashid-011.mp4',
     order: 110,
     damage: 1370,
-    frameAdvantage: 30,
+    endFrameAdvantage: 30,
   },
 ];
