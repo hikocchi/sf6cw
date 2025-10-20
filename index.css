@@ -33,6 +33,7 @@ body {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  overflow-x: hidden; /* Prevent horizontal scrollbars on mobile */
 }
 
 header {
@@ -62,6 +63,7 @@ header h1 {
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease;
+  white-space: nowrap;
 }
 
 .how-to-button:hover {
@@ -698,6 +700,7 @@ footer {
   margin-bottom: 1rem;
   line-height: 1.4;
   word-break: keep-all;
+  overflow-wrap: break-word; /* Allow breaking long words to prevent overflow */
 }
 
 .legal-info p:last-of-type {
@@ -714,6 +717,7 @@ footer {
 .contact-info p {
     line-height: 1.4;
     word-break: keep-all;
+    overflow-wrap: break-word; /* Allow breaking long words to prevent overflow */
 }
 
 .contact-info a {
