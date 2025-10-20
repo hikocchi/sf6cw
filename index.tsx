@@ -600,31 +600,29 @@ const App = () => {
   };
   
   // Mobile Touch D&D
-  const handleMobileDragHandleClick = (clickedId: string) => {
-    // If an item is already selected for moving, and we clicked a *different* item
-    if (mobileDraggedId && mobileDraggedId !== clickedId) {
-      const currentSequence = [...sequence];
-      const draggedIndex = currentSequence.findIndex(p => p.sequenceId === mobileDraggedId);
-      let targetIndex = currentSequence.findIndex(p => p.sequenceId === clickedId);
-
-      if (draggedIndex === -1 || targetIndex === -1) return;
-
-      // Remove the dragged item
-      const [draggedItem] = currentSequence.splice(draggedIndex, 1);
-      
-      // After splice, the targetIndex might need adjustment if the dragged item was before it
-      if (draggedIndex < targetIndex) {
-        targetIndex--;
-      }
-      
-      // Insert the dragged item before the target item
-      currentSequence.splice(targetIndex, 0, draggedItem);
-      
-      setSequence(currentSequence);
-      setMobileDraggedId(null); // Finish the drag operation
+  const handleMobileDragHandleClick = (targetId: string) => {
+    if (mobileDraggedId === null) {
+      // First tap: select the item to move
+      setMobileDraggedId(targetId);
     } else {
-      // If no item is selected, or we clicked the same item again, just toggle selection
-      setMobileDraggedId(prevId => (prevId === clickedId ? null : clickedId));
+      // Second tap: determine action
+      if (mobileDraggedId === targetId) {
+        // Tapped the same item again: deselect
+        setMobileDraggedId(null);
+      } else {
+        // Tapped a different item: this is the target, move the item
+        const currentSequence = [...sequence];
+        const draggedIndex = currentSequence.findIndex(p => p.sequenceId === mobileDraggedId);
+        const targetIndex = currentSequence.findIndex(p => p.sequenceId === targetId);
+
+        if (draggedIndex !== -1 && targetIndex !== -1) {
+          // Swap the items
+          [currentSequence[draggedIndex], currentSequence[targetIndex]] = [currentSequence[targetIndex], currentSequence[draggedIndex]];
+          setSequence(currentSequence);
+        }
+        
+        setMobileDraggedId(null); // Reset after move
+      }
     }
   };
 
