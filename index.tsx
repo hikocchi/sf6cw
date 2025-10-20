@@ -16,6 +16,7 @@ const HOW_TO_USE_VIDEO_ID = 'oMhooZHpaRw'; // 例: 'ABCdeFG1234'
 const MOBILE_BREAKPOINT = 900;
 const INITIAL_PARTS_LIMIT = 6;
 const REWIND_SECONDS = 5;
+const LONG_PRESS_DURATION = 200; // ms
 
 const TAG_CATEGORIES = {
   tagType: '種類',
@@ -231,10 +232,13 @@ const SequenceItem: React.FC<{
   onRemove: (sequenceId: string) => void;
   isPlaying: boolean;
   isDragging: boolean;
-  onDragStart: () => void;
-  onDragEnd: () => void;
+  onDragStart: (e: React.DragEvent) => void;
+  onDragEnd: (e: React.DragEvent) => void;
   onDragOver: (e: React.DragEvent) => void;
   isTouchDevice: boolean;
+  onMobileDragStart: (e: React.TouchEvent) => void;
+  isTouchDragging: boolean;
+  style: React.CSSProperties;
 }> = ({
   part,
   onRemove,
@@ -243,19 +247,30 @@ const SequenceItem: React.FC<{
   onDragStart,
   onDragEnd,
   onDragOver,
-  isTouchDevice
+  isTouchDevice,
+  onMobileDragStart,
+  isTouchDragging,
+  style
 }) => {
+  const itemClass = `
+    sequence-item
+    ${isPlaying ? 'playing' : ''}
+    ${isDragging ? 'dragging' : ''}
+    ${isTouchDragging ? 'touch-dragging' : ''}
+  `;
+
   return (
     <div 
-      className={`sequence-item ${isPlaying ? 'playing' : ''} ${isDragging ? 'dragging' : ''}`}
+      className={itemClass}
       draggable={!isTouchDevice}
       onDragStart={!isTouchDevice ? onDragStart : undefined}
       onDragEnd={!isTouchDevice ? onDragEnd : undefined}
       onDragOver={!isTouchDevice ? onDragOver : undefined}
+      style={style}
     >
       <button
         className="drag-handle"
-        onTouchStart={isTouchDevice ? onDragStart : undefined}
+        onTouchStart={isTouchDevice ? onMobileDragStart : undefined}
         draggable={false}
         aria-label={`Move ${part.comboparts}`}
         title="Move part"
@@ -301,6 +316,7 @@ const App = () => {
   const [isPartPickerModalOpen, setIsPartPickerModalOpen] = useState(false);
   const [dropTarget, setDropTarget] = useState<{ index: number | null; position: 'top' | 'bottom' | null }>({ index: null, position: null });
   const [activeLibraryTab, setActiveLibraryTab] = useState<'parts' | 'samples'>('parts');
+  const [touchDragState, setTouchDragState] = useState<{ id: string; startY: number; currentY: number; } | null>(null);
 
   const isTouchDevice = useMemo(() => 'ontouchstart' in window || navigator.maxTouchPoints > 0, []);
 
@@ -309,6 +325,7 @@ const App = () => {
   const ytPlayerContainerRef = useRef<HTMLDivElement>(null);
   const ytTimeCheckIntervalRef = useRef<number | null>(null);
   const sequenceListRef = useRef<HTMLDivElement>(null);
+  const longPressTimerRef = useRef<number>();
 
   const isSequencePausedRef = useRef(isSequencePaused);
   useEffect(() => {
@@ -545,22 +562,43 @@ const App = () => {
   };
 
 
-  // --- Drag and Drop Handlers ---
+  // --- Drag and Drop Logic ---
 
-  const handleDragStart = (id: string) => {
-    setDraggedId(id);
-  };
+  const handleDragStart = (id: string) => setDraggedId(id);
 
   const handleDragEnd = () => {
     setDraggedId(null);
     setDropTarget({ index: null, position: null });
   };
+  
+  const handleDrop = useCallback(() => {
+    if (!draggedId || dropTarget.index === null) return;
 
+    setSequence(currentSequence => {
+        const draggedIndex = currentSequence.findIndex(p => p.sequenceId === draggedId);
+        if (draggedIndex === -1) return currentSequence;
+
+        const newSequence = [...currentSequence];
+        const [draggedItem] = newSequence.splice(draggedIndex, 1);
+
+        let targetIndex = dropTarget.index;
+        // Adjust index if item is moved downwards
+        if (draggedIndex < targetIndex) {
+            targetIndex--;
+        }
+
+        const insertAtIndex = dropTarget.position === 'top' ? targetIndex : targetIndex + 1;
+        newSequence.splice(insertAtIndex, 0, draggedItem);
+        return newSequence;
+    });
+  }, [draggedId, dropTarget.index, dropTarget.position]);
+
+
+  // --- Desktop Drag Handlers ---
   const handleItemDragOver = (index: number, e: React.DragEvent) => {
     e.preventDefault();
-    if (sequence[index]?.sequenceId === draggedId) {
-        return;
-    }
+    if (sequence[index]?.sequenceId === draggedId) return;
+
     const targetElement = e.currentTarget as HTMLDivElement;
     const rect = targetElement.getBoundingClientRect();
     const isTopHalf = e.clientY < rect.top + rect.height / 2;
@@ -571,74 +609,81 @@ const App = () => {
     }
   };
 
-  const handleDrop = () => {
-    if (!draggedId || dropTarget.index === null) return;
+  // --- Mobile Touch Drag Handlers ---
 
-    const currentSequence = [...sequence];
-    const draggedIndex = currentSequence.findIndex(p => p.sequenceId === draggedId);
-    if (draggedIndex === -1) return;
+  const handleTouchDragMove = useCallback((e: TouchEvent) => {
+    if (!draggedId) return;
+    if (e.cancelable) e.preventDefault();
 
-    const [draggedItem] = currentSequence.splice(draggedIndex, 1);
-
-    let targetIndex = dropTarget.index;
-    if (draggedIndex < targetIndex) {
-        targetIndex--; 
-    }
-    
-    const insertAtIndex = dropTarget.position === 'top' ? targetIndex : targetIndex + 1;
-    
-    currentSequence.splice(insertAtIndex, 0, draggedItem);
-    setSequence(currentSequence);
-  };
-  
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!draggedId || !sequenceListRef.current) return;
-  
-    // Prevent scrolling while dragging
-    if (e.cancelable) {
-      e.preventDefault();
-    }
-  
     const touchY = e.touches[0].clientY;
-    const sequenceItems = Array.from(sequenceListRef.current.children)
+    setTouchDragState(prev => prev ? { ...prev, currentY: touchY } : null);
+
+    const sequenceItems = Array.from(sequenceListRef.current?.children || [])
       .filter(child => child.classList.contains('sequence-item'));
-  
-    let newDropTarget = { index: null as number | null, position: null as 'top' | 'bottom' | null };
-  
+
+    let newDropTarget: { index: number | null; position: 'top' | 'bottom' | null } = { index: null, position: null };
+
     const targetItem = sequenceItems.find(item => {
+      const itemIndex = sequenceItems.indexOf(item);
+      if (sequence[itemIndex]?.sequenceId === draggedId) return false;
       const rect = item.getBoundingClientRect();
       return touchY >= rect.top && touchY <= rect.bottom;
     });
-  
+
     if (targetItem) {
       const rect = targetItem.getBoundingClientRect();
       const targetIndex = sequenceItems.indexOf(targetItem);
-      const itemSequenceId = sequence[targetIndex]?.sequenceId;
-  
-      if (itemSequenceId !== draggedId) {
-        const isTopHalf = touchY < rect.top + rect.height / 2;
-        newDropTarget = { index: targetIndex, position: isTopHalf ? 'top' : 'bottom' };
-      }
-    } else {
+      const isTopHalf = touchY < rect.top + rect.height / 2;
+      newDropTarget = { index: targetIndex, position: isTopHalf ? 'top' : 'bottom' };
+    } else if (sequenceItems.length > 0) {
       const firstItem = sequenceItems[0];
       const lastItem = sequenceItems[sequenceItems.length - 1];
-      if (firstItem && touchY < firstItem.getBoundingClientRect().top) {
+      if (touchY < firstItem.getBoundingClientRect().top) {
         newDropTarget = { index: 0, position: 'top' };
-      } else if (lastItem && touchY > lastItem.getBoundingClientRect().bottom) {
-        newDropTarget = { index: sequence.length - 1, position: 'bottom' };
+      } else if (touchY > lastItem.getBoundingClientRect().bottom) {
+        newDropTarget = { index: sequenceItems.indexOf(lastItem), position: 'bottom' };
       }
     }
-  
+
     if (dropTarget.index !== newDropTarget.index || dropTarget.position !== newDropTarget.position) {
       setDropTarget(newDropTarget);
     }
-  };
+  }, [draggedId, sequence, dropTarget.index, dropTarget.position]);
 
-  const handleTouchEnd = () => {
-    if (draggedId) {
+
+  const handleTouchDragEnd = useCallback(() => {
+    window.removeEventListener('touchmove', handleTouchDragMove);
+    window.removeEventListener('touchend', handleTouchDragEnd);
+    window.removeEventListener('touchcancel', handleTouchDragEnd);
+    
+    if (draggedId && dropTarget.index !== null) {
       handleDrop();
-      handleDragEnd(); // Cleans up state
     }
+    
+    handleDragEnd();
+    setTouchDragState(null);
+  }, [draggedId, dropTarget, handleDrop, handleDragEnd, handleTouchDragMove]);
+
+  const initTouchDrag = useCallback((part: SequencePart, e: React.TouchEvent) => {
+    handleDragStart(part.sequenceId);
+    setTouchDragState({
+        id: part.sequenceId,
+        startY: e.touches[0].clientY,
+        currentY: e.touches[0].clientY,
+    });
+    window.addEventListener('touchmove', handleTouchDragMove, { passive: false });
+    window.addEventListener('touchend', handleTouchDragEnd);
+    window.addEventListener('touchcancel', handleTouchDragEnd);
+  }, [handleDragStart, handleTouchDragMove, handleTouchDragEnd]);
+  
+  const handleMobileDragStart = (part: SequencePart, e: React.TouchEvent) => {
+    e.persist();
+    clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = window.setTimeout(() => initTouchDrag(part, e), LONG_PRESS_DURATION);
+  };
+  
+  const cancelLongPress = () => {
+    clearTimeout(longPressTimerRef.current);
   };
 
 
@@ -796,7 +841,7 @@ const App = () => {
   }, [currentPlayingIndex, isYtApiReady, currentVideoUrl, isCurrentVideoYouTube, handleVideoEnded, getYouTubeVideoId, sequence]);
 
   return (
-    <div className="app-container">
+    <div className="app-container" onTouchEnd={cancelLongPress} onTouchMove={cancelLongPress}>
       {isHowToModalOpen && isYtApiReady && <HowToModal onClose={() => setIsHowToModalOpen(false)} />}
        <PartPickerModal
         isOpen={isPartPickerModalOpen}
@@ -961,7 +1006,9 @@ const App = () => {
                     {(currentPlayingIndex !== null && isSequencePaused) ? 'Resume' : 'Play'}
                   </button>
                   <button onClick={handleRewind} disabled={currentPlayingIndex === null}>Rewind 5s</button>
-                  <button onClick={handlePause} disabled={currentPlayingIndex === null || isSequencePaused}>Stop</button>
+                  {/* FIX: The "Stop" button should call `hardStopSequence` to actually stop playback, not just pause it.
+                      The disabled logic is also corrected to allow stopping while paused. */}
+                  <button onClick={hardStopSequence} disabled={currentPlayingIndex === null}>Stop</button>
                 </div>
                 <button 
                   className="clear-button"
@@ -994,30 +1041,51 @@ const App = () => {
                 className="sequence-list-container"
                 aria-label="Current combo sequence"
                 onDragOver={(e) => { if (!isTouchDevice) e.preventDefault(); }}
-                onDrop={!isTouchDevice ? handleDrop : undefined}
-                onTouchMove={isTouchDevice ? handleTouchMove : undefined}
-                onTouchEnd={isTouchDevice ? handleTouchEnd : undefined}
+                onDrop={!isTouchDevice ? () => { handleDrop(); handleDragEnd(); } : undefined}
               >
-                {sequence.map((part, index) => (
-                  <React.Fragment key={part.sequenceId}>
-                    {!isTouchDevice && dropTarget.index === index && dropTarget.position === 'top' && (
-                       <div className="drop-indicator" />
-                    )}
-                    <SequenceItem
-                      part={part}
-                      onRemove={handleRemoveFromSequence}
-                      isPlaying={part.sequenceId === sequence[currentPlayingIndex!]?.sequenceId}
-                      isDragging={draggedId === part.sequenceId}
-                      onDragStart={() => handleDragStart(part.sequenceId)}
-                      onDragEnd={handleDragEnd}
-                      onDragOver={(e) => handleItemDragOver(index, e)}
-                      isTouchDevice={isTouchDevice}
-                    />
-                    {!isTouchDevice && dropTarget.index === index && dropTarget.position === 'bottom' && (
-                       <div className="drop-indicator" />
-                    )}
-                  </React.Fragment>
-                ))}
+                {sequence.map((part, index) => {
+                  const isBeingTouchDragged = touchDragState?.id === part.sequenceId;
+                  let itemStyle: React.CSSProperties = {};
+                  if (isBeingTouchDragged) {
+                    const deltaY = touchDragState!.currentY - touchDragState!.startY;
+                    itemStyle = {
+                      transform: `translateY(${deltaY}px)`,
+                      pointerEvents: 'none',
+                    };
+                  }
+
+                  return (
+                    <React.Fragment key={part.sequenceId}>
+                      {!isTouchDevice && dropTarget.index === index && dropTarget.position === 'top' && (
+                        <div className="drop-indicator" />
+                      )}
+                      {isTouchDevice && dropTarget.index === index && dropTarget.position === 'top' && draggedId !== part.sequenceId && (
+                        <div className="drop-indicator" />
+                      )}
+
+                      <SequenceItem
+                        part={part}
+                        onRemove={handleRemoveFromSequence}
+                        isPlaying={part.sequenceId === sequence[currentPlayingIndex!]?.sequenceId}
+                        isDragging={draggedId === part.sequenceId && !isTouchDevice}
+                        isTouchDragging={isBeingTouchDragged}
+                        onDragStart={(e) => { e.dataTransfer.setData('text/plain', part.sequenceId); handleDragStart(part.sequenceId); }}
+                        onDragEnd={handleDragEnd}
+                        onDragOver={(e) => handleItemDragOver(index, e)}
+                        isTouchDevice={isTouchDevice}
+                        onMobileDragStart={(e) => handleMobileDragStart(part, e)}
+                        style={itemStyle}
+                      />
+
+                      {!isTouchDevice && dropTarget.index === index && dropTarget.position === 'bottom' && (
+                        <div className="drop-indicator" />
+                      )}
+                      {isTouchDevice && dropTarget.index === index && dropTarget.position === 'bottom' && draggedId !== part.sequenceId && (
+                        <div className="drop-indicator" />
+                      )}
+                    </React.Fragment>
+                  );
+                })}
               </div>
             </div>
           </div>

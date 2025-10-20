@@ -566,6 +566,13 @@ select#character-filter {
   box-shadow: 0 4px 12px rgba(0,0,0,0.5);
 }
 
+.sequence-item.touch-dragging {
+  position: relative; /* Needed for z-index to take effect */
+  z-index: 100;
+  opacity: 0.8;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+}
+
 
 .sequence-item span {
   flex-grow: 1;
