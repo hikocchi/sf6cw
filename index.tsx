@@ -230,26 +230,84 @@ const SequenceItem: React.FC<{
   part: SequencePart;
   onRemove: (sequenceId: string) => void;
   isPlaying: boolean;
-  isMoving: boolean;
-  onMoveClick: () => void;
+  isMobileView: boolean;
+  // Mobile props
+  isMoving?: boolean;
+  onMoveClick?: () => void;
+  onClick?: () => void;
+  // Desktop props
+  isDragging?: boolean;
+  onDragStart?: (e: React.DragEvent) => void;
+  onDragEnd?: (e: React.DragEvent) => void;
+  onDragOver?: (e: React.DragEvent) => void;
 }> = ({
   part,
   onRemove,
   isPlaying,
+  isMobileView,
   isMoving,
   onMoveClick,
+  onClick,
+  isDragging,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
 }) => {
   const itemClass = `
     sequence-item
     ${isPlaying ? 'playing' : ''}
-    ${isMoving ? 'moving' : ''}
+    ${isMobileView && isMoving ? 'moving' : ''}
+    ${isMobileView && onClick ? 'reorder-target' : ''}
+    ${!isMobileView && isDragging ? 'dragging' : ''}
   `;
 
+  // --- タッチイベント用のリファレンス (モバイル専用) ---
+  const touchStartPos = useRef({ x: 0, y: 0 });
+  const touchMoved = useRef(false);
+  
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      touchMoved.current = false;
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+        const touchCurrentPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        const distance = Math.sqrt(
+            Math.pow(touchCurrentPos.x - touchStartPos.current.x, 2) +
+            Math.pow(touchCurrentPos.y - touchStartPos.current.y, 2)
+        );
+        if (distance > 10) {
+            touchMoved.current = true;
+        }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchMoved.current) {
+      onMoveClick?.();
+    }
+    touchMoved.current = false;
+  };
+
   return (
-    <div className={itemClass}>
+    <div 
+      className={itemClass}
+      onClick={isMobileView ? onClick : undefined}
+      draggable={!isMobileView}
+      onDragStart={!isMobileView ? onDragStart : undefined}
+      onDragEnd={!isMobileView ? onDragEnd : undefined}
+      onDragOver={!isMobileView ? onDragOver : undefined}
+    >
       <button
         className="drag-handle"
-        onClick={onMoveClick}
+        onClick={isMobileView ? onMoveClick : undefined}
+        onTouchStart={isMobileView ? handleTouchStart : undefined}
+        onTouchMove={isMobileView ? handleTouchMove : undefined}
+        onTouchEnd={isMobileView ? handleTouchEnd : undefined}
+        style={{ cursor: isMobileView ? 'pointer' : 'grab' }}
         aria-label={`Move ${part.comboparts}`}
         title="Move part"
       >
@@ -262,6 +320,15 @@ const SequenceItem: React.FC<{
     </div>
   );
 };
+
+const DropIndicator: React.FC<{ isOver: boolean }> = ({ isOver }) => {
+  return (
+    <div
+      className={`drop-indicator ${isOver ? 'active' : ''}`}
+    />
+  );
+};
+
 
 // --- Custom Hooks ---
 
@@ -566,30 +633,34 @@ const useVideoPlayer = (sequence: SequencePart[]) => {
 const useSequenceReorder = (
   setSequence: React.Dispatch<React.SetStateAction<SequencePart[]>>
 ) => {
-  const [movingPartId, setMovingPartId] = useState<string | null>(null);
-
-  const handleStartMove = (partId: string) => {
-    // すでに同じパーツが選択されている場合は移動モードをキャンセル
-    setMovingPartId(prevId => (prevId === partId ? null : partId));
-  };
-
-  const handleConfirmMove = (targetIndex: number) => {
-    if (!movingPartId) return;
-
+  // --- 共通ロジック ---
+  const reorderSequence = useCallback((draggedId: string, dropIndex: number) => {
     setSequence(currentSequence => {
-      const draggedIndex = currentSequence.findIndex(p => p.sequenceId === movingPartId);
+      const draggedIndex = currentSequence.findIndex(p => p.sequenceId === draggedId);
       if (draggedIndex === -1) return currentSequence;
 
       const newSequence = [...currentSequence];
       const [draggedItem] = newSequence.splice(draggedIndex, 1);
       
-      // 自身を移動させる場合、挿入先のインデックスがずれることがあるため調整
-      const adjustedTargetIndex = draggedIndex < targetIndex ? targetIndex - 1 : targetIndex;
+      // 自身より前の位置に移動させる場合は、dropIndexの調整は不要
+      // 自身より後の位置に移動させる場合は、spliceで自身が消えた分インデックスが1つずれるので調整
+      const adjustedDropIndex = draggedIndex < dropIndex ? dropIndex - 1 : dropIndex;
 
-      newSequence.splice(adjustedTargetIndex, 0, draggedItem);
+      newSequence.splice(adjustedDropIndex, 0, draggedItem);
       return newSequence;
     });
+  }, [setSequence]);
 
+  // --- モバイル用: タップ移動 ---
+  const [movingPartId, setMovingPartId] = useState<string | null>(null);
+
+  const handleStartMove = (partId: string) => {
+    setMovingPartId(prevId => (prevId === partId ? null : partId));
+  };
+
+  const handleConfirmMove = (targetIndex: number) => {
+    if (!movingPartId) return;
+    reorderSequence(movingPartId, targetIndex);
     setMovingPartId(null);
   };
 
@@ -597,13 +668,63 @@ const useSequenceReorder = (
     setMovingPartId(null);
   };
 
-  return {
-    state: { movingPartId },
-    actions: {
-      handleStartMove,
-      handleConfirmMove,
-      handleCancelMove,
+  // --- PC用: ドラッグ＆ドロップ ---
+  const [draggingPartId, setDraggingPartId] = useState<string | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, partId: string) => {
+    e.dataTransfer.setData('text/plain', partId);
+    e.dataTransfer.effectAllowed = 'move';
+    setTimeout(() => setDraggingPartId(partId), 0);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggingPartId === null) return;
+    
+    const target = e.currentTarget as HTMLDivElement;
+    const rect = target.getBoundingClientRect();
+    const midY = rect.top + rect.height / 2;
+    
+    const newDragOverIndex = e.clientY < midY ? index : index + 1;
+    if (newDragOverIndex !== dragOverIndex) {
+      setDragOverIndex(newDragOverIndex);
     }
+  };
+  
+  const handleDragLeave = (e: React.DragEvent) => {
+    // This check is crucial to prevent flickering. It ensures that we only clear
+    // the drop indicator when the mouse leaves the entire list container, not
+    // when it moves between individual items inside it.
+    const listContainer = e.currentTarget;
+    if (e.relatedTarget && listContainer.contains(e.relatedTarget as Node)) {
+      // The cursor is still within the bounds of the list or one of its children.
+      return;
+    }
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const draggedId = e.dataTransfer.getData('text/plain');
+    if (draggedId && dragOverIndex !== null) {
+        reorderSequence(draggedId, dragOverIndex);
+    }
+    setDraggingPartId(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggingPartId(null);
+    setDragOverIndex(null);
+  };
+
+
+  return {
+    mobileState: { movingPartId },
+    mobileActions: { handleStartMove, handleConfirmMove, handleCancelMove },
+    desktopState: { draggingPartId, dragOverIndex },
+    desktopActions: { handleDragStart, handleDragOver, handleDragLeave, handleDrop, handleDragEnd },
   };
 };
 
@@ -616,7 +737,7 @@ const App = () => {
   const { tags, handleTagClick, resetFilters, availableTags, filteredParts } = useFilters(comboParts);
   const { sequence, setSequence, addPartToSequence, removeFromSequence, clearSequence, loadSampleCombo, comboStats } = useSequence();
   const { refs: playerRefs, state: playerState, actions: playerActions } = useVideoPlayer(sequence);
-  const { state: reorderState, actions: reorderActions } = useSequenceReorder(setSequence);
+  const { mobileState, mobileActions, desktopState, desktopActions } = useSequenceReorder(setSequence);
   
   const [showAllParts, setShowAllParts] = useState(false);
   const [isPartPickerModalOpen, setIsPartPickerModalOpen] = useState(false);
@@ -638,8 +759,8 @@ const App = () => {
   
   // 他の操作が行われたら並べ替えモードをキャンセルする
   useEffect(() => {
-    if (reorderState.movingPartId) {
-      reorderActions.handleCancelMove();
+    if (mobileState.movingPartId) {
+      mobileActions.handleCancelMove();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sequence.length]);
@@ -795,8 +916,8 @@ const App = () => {
                   <button onClick={playerActions.pauseSequence} disabled={playerState.currentPlayingIndex === null || playerState.isSequencePaused}>Pause</button>
                   <button onClick={playerActions.hardStopSequence} disabled={playerState.currentPlayingIndex === null}>Stop</button>
                 </div>
-                 {reorderState.movingPartId ? (
-                  <button className="cancel-move-button" onClick={reorderActions.handleCancelMove}>Cancel Move</button>
+                 {mobileState.movingPartId ? (
+                  <button className="cancel-move-button" onClick={mobileActions.handleCancelMove}>並び替えをキャンセル</button>
                 ) : (
                   <button className="clear-button" onClick={handleClear} disabled={sequence.length === 0}>Clear</button>
                 )}
@@ -813,35 +934,62 @@ const App = () => {
                 </div>
               )}
 
-              <div className="sequence-list-container">
-                 {reorderState.movingPartId && (
-                  <button
-                    className="move-target-indicator"
-                    onClick={() => reorderActions.handleConfirmMove(0)}
-                  >
-                    ここに移動 (先頭)
-                  </button>
-                )}
-                {sequence.map((part, index) => (
-                  <React.Fragment key={part.sequenceId}>
+              {isMobileView ? (
+                <div className={`sequence-list-container ${mobileState.movingPartId ? 'is-reordering' : ''}`}>
+                  {mobileState.movingPartId && (
+                    <button
+                      className="move-target-indicator"
+                      onClick={() => mobileActions.handleConfirmMove(0)}
+                    >
+                      ここに移動 (先頭)
+                    </button>
+                  )}
+                  {sequence.map((part, index) => (
                     <SequenceItem
+                      key={part.sequenceId}
                       part={part}
                       onRemove={handleRemovePart}
                       isPlaying={part.sequenceId === sequence[playerState.currentPlayingIndex!]?.sequenceId}
-                      isMoving={reorderState.movingPartId === part.sequenceId}
-                      onMoveClick={() => reorderActions.handleStartMove(part.sequenceId)}
+                      isMobileView={true}
+                      isMoving={mobileState.movingPartId === part.sequenceId}
+                      onMoveClick={() => mobileActions.handleStartMove(part.sequenceId)}
+                      onClick={
+                        mobileState.movingPartId && mobileState.movingPartId !== part.sequenceId
+                          ? () => mobileActions.handleConfirmMove(index + 1)
+                          : undefined
+                      }
                     />
-                    {reorderState.movingPartId && reorderState.movingPartId !== part.sequenceId && (
-                       <button
-                        className="move-target-indicator"
-                        onClick={() => reorderActions.handleConfirmMove(index + 1)}
-                      >
-                        ここに移動
-                      </button>
-                    )}
-                  </React.Fragment>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div 
+                  className="sequence-list-container"
+                  onDrop={desktopActions.handleDrop}
+                  onDragLeave={desktopActions.handleDragLeave}
+                  onDragOver={(e) => e.preventDefault()} // Allow dropping on the container itself
+                >
+                  <DropIndicator
+                    isOver={desktopState.dragOverIndex === 0}
+                  />
+                  {sequence.map((part, index) => (
+                    <React.Fragment key={part.sequenceId}>
+                      <SequenceItem
+                        part={part}
+                        onRemove={handleRemovePart}
+                        isPlaying={part.sequenceId === sequence[playerState.currentPlayingIndex!]?.sequenceId}
+                        isMobileView={false}
+                        isDragging={desktopState.draggingPartId === part.sequenceId}
+                        onDragStart={(e) => desktopActions.handleDragStart(e, part.sequenceId)}
+                        onDragEnd={desktopActions.handleDragEnd}
+                        onDragOver={(e) => desktopActions.handleDragOver(e, index)}
+                      />
+                      <DropIndicator
+                        isOver={desktopState.dragOverIndex === index + 1}
+                      />
+                    </React.Fragment>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </section>

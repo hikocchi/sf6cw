@@ -540,7 +540,6 @@ select#character-filter {
   background-color: var(--background-color);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
 }
 
 .sequence-item {
@@ -558,6 +557,12 @@ select#character-filter {
   border-color: var(--primary-color);
   box-shadow: 0 0 10px var(--primary-color);
   background-color: #4f4f4f;
+}
+
+/* Style for dragged item on Desktop */
+.sequence-item.dragging {
+  opacity: 0.5;
+  border-style: dashed;
 }
 
 .sequence-item span {
@@ -598,6 +603,7 @@ select#character-filter {
   touch-action: manipulation; /* Prevent zoom on double tap */
 }
 
+/* Mobile tap-to-move indicator */
 .move-target-indicator {
   background-color: transparent;
   border: 2px dashed var(--primary-color);
@@ -610,11 +616,39 @@ select#character-filter {
   font-size: 0.9rem;
   font-weight: 500;
   transition: background-color 0.2s ease;
+  margin: 0.25rem 0;
 }
 
 .move-target-indicator:hover {
   background-color: rgba(255, 193, 7, 0.1);
 }
+
+/* Mobile reorder target styling */
+.sequence-list-container.is-reordering .sequence-item.reorder-target {
+  cursor: pointer;
+}
+
+.sequence-list-container.is-reordering .sequence-item.reorder-target:hover {
+  background-color: rgba(255, 193, 7, 0.1);
+  border-left-color: var(--primary-color);
+}
+
+
+/* Desktop drag-and-drop indicator */
+.drop-indicator {
+  height: 4px;
+  margin: 2px 0;
+  border-radius: 2px;
+  background-color: transparent;
+  transition: height 0.2s ease, background-color 0.2s ease, border 0.2s ease;
+}
+
+.drop-indicator.active {
+  height: 30px;
+  background-color: rgba(255, 193, 7, 0.2);
+  border: 2px dashed var(--primary-color);
+}
+
 
 .notation-guide {
   grid-column: 1 / -1; /* Span both columns */
@@ -912,6 +946,10 @@ footer {
   .parts-list {
     /* Hide the original list on mobile if modal is used */
     overflow-y: visible;
+  }
+
+  .sequence-list-container {
+    gap: 0.5rem;
   }
 }
 
