@@ -495,6 +495,7 @@ const useVideoPlayer = (sequence: SequencePart[]) => {
       return (match && match[2].length === 11) ? match[2] : null;
   }, []);
   
+  // FIX: Refactored to correctly handle video event listeners and their cleanup.
   useEffect(() => {
     if (currentPlayingIndex === null || !currentVideoUrl) return;
 
@@ -514,6 +515,16 @@ const useVideoPlayer = (sequence: SequencePart[]) => {
     const shouldCheckEndTime = currentPart.endTime && !isLastPartInSequence;
 
     const videoElement = videoRef.current;
+
+    const onLoadedMetadata = () => {
+      if (videoElement) {
+          if (currentPart.startTime) videoElement.currentTime = currentPart.startTime;
+          videoElement.play().catch(e => console.error("Video play failed:", e));
+      }
+    };
+    const handleTimeUpdate = () => {
+      if (videoElement && shouldCheckEndTime && videoElement.currentTime >= currentPart.endTime!) handleVideoEnded();
+    };
 
     if (isCurrentVideoYouTube) {
       if(isYtApiReady && ytPlayerContainerRef.current) {
@@ -537,15 +548,6 @@ const useVideoPlayer = (sequence: SequencePart[]) => {
         }
       }
     } else {
-      const onLoadedMetadata = () => {
-        if (videoElement) {
-            if (currentPart.startTime) videoElement.currentTime = currentPart.startTime;
-            videoElement.play().catch(e => console.error("Video play failed:", e));
-        }
-      };
-      const handleTimeUpdate = () => {
-        if (videoElement && shouldCheckEndTime && videoElement.currentTime >= currentPart.endTime!) handleVideoEnded();
-      };
       if (videoElement) {
         videoElement.addEventListener('loadedmetadata', onLoadedMetadata);
         videoElement.addEventListener('timeupdate', handleTimeUpdate);
@@ -565,11 +567,8 @@ const useVideoPlayer = (sequence: SequencePart[]) => {
         ytTimeCheckIntervalRef.current = null;
       }
       if (videoElement) {
-        videoElement.removeEventListener('loadedmetadata', () => {});
-        videoElement.removeEventListener('timeupdate', () => {});
-        // FIX: The event listener for 'ended' was being removed with a new anonymous function
-        // instead of the original handler, which prevents it from being removed correctly.
-        // Changed to use the correct handler function `handleVideoEnded`.
+        videoElement.removeEventListener('loadedmetadata', onLoadedMetadata);
+        videoElement.removeEventListener('timeupdate', handleTimeUpdate);
         videoElement.removeEventListener('ended', handleVideoEnded);
         if (videoElement.src) {
             videoElement.pause();

@@ -611,8 +611,9 @@ select#character-filter {
   font-size: 1.5rem;
   color: var(--text-secondary-color);
   padding: 0 0.5rem;
-  touch-action: none;
-  user-select: none;
+  /* --- iOS Drag & Drop Fixes --- */
+  touch-action: none; /* Prevent browser default touch actions like scroll */
+  user-select: none; /* Prevent text selection on long press */
   -webkit-user-select: none; /* Safari */
   -webkit-touch-callout: none; /* iOS Safari */
 }
