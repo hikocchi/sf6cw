@@ -587,35 +587,150 @@ const useVideoPlayer = (sequence: SequencePart[]) => {
 };
 
 const useDragAndDrop = (sequence: SequencePart[], setSequence: React.Dispatch<React.SetStateAction<SequencePart[]>>, isTouchDevice: boolean) => {
+  // State for UI updates
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dropTarget, setDropTarget] = useState<{ index: number | null; position: 'top' | 'bottom' | null }>({ index: null, position: null });
   const [touchDragState, setTouchDragState] = useState<{ id: string; startY: number; elementInitialTop: number; initialScrollTop: number; currentY: number; } | null>(null);
   
+  // Refs for DOM elements and timers
   const sequenceListRef = useRef<HTMLDivElement>(null);
-  const longPressTimerRef = useRef<ReturnType<typeof setTimeout>>();
-  const touchStartInfoRef = useRef<{ part: SequencePart; element: HTMLElement; touch: React.Touch; } | null>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  // Ref to hold all mutable logic state to avoid stale closures
+  const stateRef = useRef({
+    draggedId,
+    dropTarget,
+    sequence,
+    setSequence,
+    touchDragState,
+    isDragging: false,
+  });
 
-  const handleDragStart = (id: string) => setDraggedId(id);
-  const handleDragEnd = () => {
+  // Keep the ref updated with the latest state on every render
+  useEffect(() => {
+    stateRef.current = {
+      draggedId,
+      dropTarget,
+      sequence,
+      setSequence,
+      touchDragState,
+      isDragging: stateRef.current.isDragging, // Preserve dragging flag across renders
+    };
+  });
+
+  const handleDragEnd = useCallback(() => {
     setDraggedId(null);
     setDropTarget({ index: null, position: null });
     setTouchDragState(null);
-  };
+    stateRef.current.isDragging = false;
+  }, []);
 
   const handleDrop = useCallback(() => {
+    const { draggedId, dropTarget, setSequence } = stateRef.current;
     if (!draggedId || dropTarget.index === null) return;
+
     setSequence(currentSequence => {
-        const draggedIndex = currentSequence.findIndex(p => p.sequenceId === draggedId);
-        if (draggedIndex === -1) return currentSequence;
-        const newSequence = [...currentSequence];
-        const [draggedItem] = newSequence.splice(draggedIndex, 1);
-        let targetIndex = dropTarget.index;
-        if (draggedIndex < targetIndex) targetIndex--;
-        const insertAtIndex = dropTarget.position === 'top' ? targetIndex : targetIndex + 1;
-        newSequence.splice(insertAtIndex, 0, draggedItem);
-        return newSequence;
+      const draggedIndex = currentSequence.findIndex(p => p.sequenceId === draggedId);
+      if (draggedIndex === -1) return currentSequence;
+
+      const newSequence = [...currentSequence];
+      const [draggedItem] = newSequence.splice(draggedIndex, 1);
+      
+      let targetIndex = dropTarget.index;
+      // Adjust target index if dragging downwards
+      if (draggedIndex < targetIndex) {
+        targetIndex--;
+      }
+      
+      const insertAtIndex = dropTarget.position === 'top' ? targetIndex : targetIndex + 1;
+      newSequence.splice(insertAtIndex, 0, draggedItem);
+      
+      return newSequence;
     });
-  }, [draggedId, dropTarget, setSequence]);
+  }, [/* setSequence is stable */]);
+
+  // Event handlers are defined with useCallback to be stable, preventing re-adding listeners
+  const handleTouchDragMove = useCallback((e: TouchEvent) => {
+    if (!stateRef.current.isDragging) return;
+    if (e.cancelable) e.preventDefault();
+
+    const touchY = e.touches[0].clientY;
+    setTouchDragState(prev => prev ? { ...prev, currentY: touchY } : null);
+
+    const { sequence, draggedId } = stateRef.current;
+    const sequenceItems = Array.from(sequenceListRef.current?.children || []).filter(c => c.classList.contains('sequence-item'));
+    let newDropTarget: { index: number | null; position: 'top' | 'bottom' | null } = { index: null, position: null };
+
+    const targetItem = sequenceItems.find(item => {
+      const itemSequenceId = sequence[sequenceItems.indexOf(item)]?.sequenceId;
+      if (itemSequenceId === draggedId) return false;
+      const rect = item.getBoundingClientRect();
+      return touchY >= rect.top && touchY <= rect.bottom;
+    });
+
+    if (targetItem) {
+      const rect = targetItem.getBoundingClientRect();
+      const targetIndex = sequenceItems.indexOf(targetItem);
+      newDropTarget = { index: targetIndex, position: touchY < rect.top + rect.height / 2 ? 'top' : 'bottom' };
+    }
+    
+    if (stateRef.current.dropTarget.index !== newDropTarget.index || stateRef.current.dropTarget.position !== newDropTarget.position) {
+      setDropTarget(newDropTarget);
+    }
+  }, []);
+
+  const handleTouchDragEnd = useCallback(() => {
+    window.removeEventListener('touchmove', handleTouchDragMove);
+    window.removeEventListener('touchend', handleTouchDragEnd);
+    window.removeEventListener('touchcancel', handleTouchDragEnd);
+
+    if (stateRef.current.isDragging) {
+      handleDrop();
+    }
+    handleDragEnd();
+  }, [handleDrop, handleDragEnd, handleTouchDragMove]);
+
+  const handleMobileDragStart = useCallback((part: SequencePart, e: React.TouchEvent) => {
+    const element = (e.currentTarget as HTMLElement).closest('.sequence-item');
+    if (!(element instanceof HTMLElement)) return;
+
+    // Clear any existing timer
+    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+    
+    const touch = e.touches[0];
+    longPressTimerRef.current = setTimeout(() => {
+      stateRef.current.isDragging = true;
+      if (navigator.vibrate) navigator.vibrate(50);
+      
+      setDraggedId(part.sequenceId);
+      setTouchDragState({
+        id: part.sequenceId,
+        startY: touch.clientY,
+        elementInitialTop: element.offsetTop,
+        initialScrollTop: sequenceListRef.current?.scrollTop || 0,
+        currentY: touch.clientY,
+      });
+
+      window.addEventListener('touchmove', handleTouchDragMove, { passive: false });
+      window.addEventListener('touchend', handleTouchDragEnd);
+      window.addEventListener('touchcancel', handleTouchDragEnd);
+    }, LONG_PRESS_DURATION);
+  }, [handleTouchDragMove, handleTouchDragEnd]);
+  
+  const cancelLongPress = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }, []);
+
+  // --- Desktop DnD Handlers ---
+  const handleDesktopDragStart = (id: string) => setDraggedId(id);
+
+  const handleDesktopDrop = () => {
+    handleDrop();
+    handleDragEnd();
+  };
 
   const handleItemDragOver = (index: number, e: React.DragEvent) => {
     e.preventDefault();
@@ -627,76 +742,17 @@ const useDragAndDrop = (sequence: SequencePart[], setSequence: React.Dispatch<Re
     }
   };
 
-  const handleTouchDragMove = useCallback((e: TouchEvent) => {
-    if (!draggedId) return;
-    if (e.cancelable) e.preventDefault();
-    const touchY = e.touches[0].clientY;
-    setTouchDragState(prev => prev ? { ...prev, currentY: touchY } : null);
-
-    const sequenceItems = Array.from(sequenceListRef.current?.children || []).filter(c => c.classList.contains('sequence-item'));
-    let newDropTarget: { index: number | null; position: 'top' | 'bottom' | null } = { index: null, position: null };
-
-    const targetItem = sequenceItems.find(item => {
-      if (sequence[sequenceItems.indexOf(item)]?.sequenceId === draggedId) return false;
-      const rect = item.getBoundingClientRect();
-      return touchY >= rect.top && touchY <= rect.bottom;
-    });
-
-    if (targetItem) {
-      const rect = targetItem.getBoundingClientRect();
-      const targetIndex = sequenceItems.indexOf(targetItem);
-      newDropTarget = { index: targetIndex, position: touchY < rect.top + rect.height / 2 ? 'top' : 'bottom' };
-    } // More logic for top/bottom of list can be added here if needed
-
-    if (dropTarget.index !== newDropTarget.index || dropTarget.position !== newDropTarget.position) {
-      setDropTarget(newDropTarget);
-    }
-  }, [draggedId, sequence, dropTarget]);
-
-  const handleTouchDragEnd = useCallback(() => {
-    window.removeEventListener('touchmove', handleTouchDragMove);
-    window.removeEventListener('touchend', handleTouchDragEnd);
-    window.removeEventListener('touchcancel', handleTouchDragEnd);
-    if (draggedId && dropTarget.index !== null) handleDrop();
-    handleDragEnd();
-  }, [draggedId, dropTarget, handleDrop, handleTouchDragMove]);
-
-  const initTouchDrag = useCallback(() => {
-    if (!touchStartInfoRef.current) return;
-    const { part, element, touch } = touchStartInfoRef.current;
-    if (!sequenceListRef.current) return;
-    if (navigator.vibrate) navigator.vibrate(50);
-    handleDragStart(part.sequenceId);
-    setTouchDragState({
-        id: part.sequenceId, startY: touch.clientY, elementInitialTop: element.offsetTop,
-        initialScrollTop: sequenceListRef.current.scrollTop, currentY: touch.clientY,
-    });
-    window.addEventListener('touchmove', handleTouchDragMove, { passive: false });
-    window.addEventListener('touchend', handleTouchDragEnd);
-    window.addEventListener('touchcancel', handleTouchDragEnd);
-  }, [handleTouchDragMove, handleTouchDragEnd]);
-
-  const handleMobileDragStart = (part: SequencePart, e: React.TouchEvent) => {
-    const element = (e.currentTarget as HTMLElement).closest('.sequence-item');
-    if (!(element instanceof HTMLElement)) return;
-    touchStartInfoRef.current = { part, element, touch: e.touches[0] };
-    if (longPressTimerRef.current) {
-        window.clearTimeout(longPressTimerRef.current);
-    }
-    longPressTimerRef.current = window.setTimeout(initTouchDrag, LONG_PRESS_DURATION);
-  };
-  
-  const cancelLongPress = () => {
-    if (longPressTimerRef.current) {
-      window.clearTimeout(longPressTimerRef.current);
-      longPressTimerRef.current = undefined;
-    }
-  };
-
   return {
     refs: { sequenceListRef },
     state: { draggedId, dropTarget, touchDragState },
-    actions: { handleDragStart, handleDragEnd, handleDrop, handleItemDragOver, handleMobileDragStart, cancelLongPress }
+    actions: {
+      handleDragStart: handleDesktopDragStart,
+      handleDragEnd,
+      handleDrop: handleDesktopDrop,
+      handleItemDragOver,
+      handleMobileDragStart,
+      cancelLongPress
+    }
   };
 };
 
@@ -893,7 +949,7 @@ const App = () => {
                 </div>
               )}
 
-              <div ref={dndRefs.sequenceListRef} className="sequence-list-container" onDragOver={(e) => { if (!isTouchDevice) e.preventDefault(); }} onDrop={!isTouchDevice ? () => { dndActions.handleDrop(); dndActions.handleDragEnd(); } : undefined}>
+              <div ref={dndRefs.sequenceListRef} className="sequence-list-container" onDragOver={(e) => { if (!isTouchDevice) e.preventDefault(); }} onDrop={!isTouchDevice ? dndActions.handleDrop : undefined}>
                 {sequence.map((part, index) => {
                   const isBeingTouchDragged = dndState.touchDragState?.id === part.sequenceId;
                   let itemStyle: React.CSSProperties = {};
