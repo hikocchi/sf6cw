@@ -106,6 +106,27 @@ const PartPickerModal: React.FC<{
   onPartAdd: (part: ComboPart) => void;
   sequence: SequencePart[];
 }> = ({ isOpen, onClose, parts, onPartAdd, sequence }) => {
+  const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      // モーダルが開いたらスクロールをトップにリセット
+      if (listRef.current) {
+        listRef.current.scrollTop = 0;
+      }
+      // bodyのスクロールを禁止
+      document.body.style.overflow = 'hidden';
+    } else {
+      // モーダルが閉じたらbodyのスクロールを許可
+      document.body.style.overflow = '';
+    }
+
+    // コンポーネントがアンマウントされる際のクリーンアップ
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const isPartInSequence = (partId: string) => {
@@ -132,7 +153,7 @@ const PartPickerModal: React.FC<{
             完了
           </button>
         </header>
-        <div className="part-picker-modal-list">
+        <div ref={listRef} className="part-picker-modal-list">
           {parts.map(part => {
              const added = isPartInSequence(part.id);
              const partTags = getPartTags(part);
