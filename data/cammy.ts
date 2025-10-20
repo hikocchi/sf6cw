@@ -7,7 +7,6 @@ export const cammyComboParts: ComboPart[] = [
     name: 'cammy-001',
     comboparts: 'スパイラルアロー',
     videoUrl: 'https://www.streetfighter.com/6/character/cammy/frame/special#SpiralArrow',
-    tags: ['starter', 'combo-filler'],
     order: 10,
   },
   {
@@ -16,7 +15,6 @@ export const cammyComboParts: ComboPart[] = [
     name: 'cammy-002',
     comboparts: 'キャノンスパイク',
     videoUrl: 'https://www.streetfighter.com/6/character/cammy/frame/special#CannonSpike',
-    tags: ['ender', 'anti-air'],
     order: 20,
   },
 ];

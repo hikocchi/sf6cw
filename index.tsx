@@ -17,6 +17,15 @@ const MOBILE_BREAKPOINT = 900;
 const INITIAL_PARTS_LIMIT = 6;
 const REWIND_SECONDS = 5;
 
+const TAG_CATEGORIES = {
+  tagType: '種類',
+  tagSituation: '状況',
+  tagCondition: '条件',
+  tagDriveGauge: 'Dゲージ',
+  tagSaGauge: 'SAゲージ'
+} as const;
+type TagCategoryKey = keyof typeof TAG_CATEGORIES;
+
 
 // --- 型定義 ---
 export interface ComboPart {
@@ -25,12 +34,16 @@ export interface ComboPart {
   name: string;
   comboparts: string;
   videoUrl: string;
-  tags: string[];
   order: number;
   damage?: number;
   frameAdvantage?: number;
   startTime?: number;
   endTime?: number;
+  tagType?: string;
+  tagSituation?: string;
+  tagCondition?: string[];
+  tagDriveGauge?: string;
+  tagSaGauge?: string;
 }
 
 interface SequencePart extends ComboPart {
@@ -100,6 +113,16 @@ const PartPickerModal: React.FC<{
     return sequence.some(p => p.id === partId);
   }
 
+  const getPartTags = (part: ComboPart) => {
+    return [
+      part.tagType,
+      part.tagSituation,
+      ...(part.tagCondition || []),
+      part.tagDriveGauge && `D: ${part.tagDriveGauge}`,
+      part.tagSaGauge && `SA: ${part.tagSaGauge}`
+    ].filter(Boolean) as string[];
+  };
+
   return (
     <div className="part-picker-modal-overlay" role="dialog" aria-modal="true">
       <div className="part-picker-modal-content">
@@ -112,12 +135,13 @@ const PartPickerModal: React.FC<{
         <div className="part-picker-modal-list">
           {parts.map(part => {
              const added = isPartInSequence(part.id);
+             const partTags = getPartTags(part);
              return (
               <div key={part.id} className="part-picker-item">
                 <div className="part-picker-info">
                   <h3>{part.name}</h3>
                   <div className="tags">
-                    {part.tags && part.tags.map(tag => <span key={tag} className="tag">{tag}</span>)}
+                    {partTags.map(tag => <span key={tag} className="tag">{tag}</span>)}
                   </div>
                 </div>
                 <button
@@ -141,6 +165,14 @@ const PartPickerModal: React.FC<{
 
 
 const PartCard: React.FC<{ part: ComboPart; onPartClick: (part: ComboPart) => void; }> = ({ part, onPartClick }) => {
+  const partTags = [
+    part.tagType,
+    part.tagSituation,
+    ...(part.tagCondition || []),
+    part.tagDriveGauge && `D: ${part.tagDriveGauge}`,
+    part.tagSaGauge && `SA: ${part.tagSaGauge}`
+  ].filter(Boolean) as string[];
+
   return (
     <div
       className="part-card"
@@ -152,7 +184,7 @@ const PartCard: React.FC<{ part: ComboPart; onPartClick: (part: ComboPart) => vo
     >
       <h3>{part.name}</h3>
       <div className="tags">
-        {part.tags && part.tags.map(tag => <span key={tag} className="tag">{tag}</span>)}
+        {partTags.map(tag => <span key={tag} className="tag">{tag}</span>)}
       </div>
       <div className="part-info">
         {part.damage != null && (
@@ -204,20 +236,31 @@ const App = () => {
   const [sampleCombos, setSampleCombos] = useState<SampleCombo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  const [filters, setFilters] = useState({ character: CHARACTERS[0] || '', tags: [] as string[] });
+  const initialFilters = {
+    character: CHARACTERS[0] || '',
+    tags: {
+      tagType: new Set<string>(),
+      tagSituation: new Set<string>(),
+      tagCondition: new Set<string>(),
+      tagDriveGauge: new Set<string>(),
+      tagSaGauge: new Set<string>(),
+    }
+  };
+
+  const [filters, setFilters] = useState(initialFilters);
   const [sequence, setSequence] = useState<SequencePart[]>([]);
   const [currentPlayingIndex, setCurrentPlayingIndex] = useState<number | null>(null);
   const [isSequencePaused, setIsSequencePaused] = useState(false);
   const [isYtApiReady, setYtApiReady] = useState(false);
   const [isCharSelectExpanded, setIsCharSelectExpanded] = useState(true);
   const [isLibraryExpanded, setIsLibraryExpanded] = useState(true);
-  const [isSampleCombosExpanded, setIsSampleCombosExpanded] = useState(true);
   const [isHowToModalOpen, setIsHowToModalOpen] = useState(false);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [isMobileView, setIsMobileView] = useState(window.innerWidth <= MOBILE_BREAKPOINT);
   const [showAllParts, setShowAllParts] = useState(false);
   const [isPartPickerModalOpen, setIsPartPickerModalOpen] = useState(false);
   const [dropTarget, setDropTarget] = useState<{ index: number | null; position: 'top' | 'bottom' | null }>({ index: null, position: null });
+  const [activeLibraryTab, setActiveLibraryTab] = useState<'parts' | 'samples'>('parts');
 
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -258,7 +301,6 @@ const App = () => {
         if (!isMobile) {
             setIsCharSelectExpanded(true);
             setIsLibraryExpanded(true);
-            setIsSampleCombosExpanded(true);
         }
     };
 
@@ -269,30 +311,86 @@ const App = () => {
 
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFilters({ character: e.target.value, tags: [] }); // キャラクター変更時にタグフィルターをリセット
+    setFilters({ ...initialFilters, character: e.target.value });
   };
 
-  const handleTagClick = (tag: string) => {
-    setFilters(prevFilters => {
-        const newTags = prevFilters.tags.includes(tag)
-            ? prevFilters.tags.filter(t => t !== tag)
-            : [...prevFilters.tags, tag];
-        return { ...prevFilters, tags: newTags };
+  const handleTagClick = (category: TagCategoryKey, tag: string) => {
+    setFilters(prev => {
+      const newCategoryTags = new Set(prev.tags[category]);
+      if (newCategoryTags.has(tag)) {
+        newCategoryTags.delete(tag);
+      } else {
+        newCategoryTags.add(tag);
+      }
+      return {
+        ...prev,
+        tags: {
+          ...prev.tags,
+          [category]: newCategoryTags,
+        },
+      };
     });
   };
 
   const availableTags = useMemo(() => {
-    const allTags = comboParts.flatMap(part => part.tags || []);
-    return [...new Set(allTags)].sort();
+    const categories: { [K in TagCategoryKey]: Set<string> } = {
+        tagType: new Set<string>(),
+        tagSituation: new Set<string>(),
+        tagCondition: new Set<string>(),
+        tagDriveGauge: new Set<string>(),
+        tagSaGauge: new Set<string>(),
+    };
+    for (const part of comboParts) {
+        if (part.tagType) categories.tagType.add(part.tagType);
+        if (part.tagSituation) categories.tagSituation.add(part.tagSituation);
+        if (part.tagCondition) {
+          part.tagCondition.forEach(tag => categories.tagCondition.add(tag));
+        }
+        if (part.tagDriveGauge) categories.tagDriveGauge.add(part.tagDriveGauge);
+        if (part.tagSaGauge) categories.tagSaGauge.add(part.tagSaGauge);
+    }
+    
+    const sortNumerically = (a: string, b: string) => {
+        const numA = parseInt(a.match(/\d+/)?.[0] || '0');
+        const numB = parseInt(b.match(/\d+/)?.[0] || '0');
+        return numA - numB;
+    };
+    
+    return {
+        tagType: [...categories.tagType].sort(),
+        tagSituation: [...categories.tagSituation].sort(),
+        tagCondition: [...categories.tagCondition].sort(),
+        tagDriveGauge: [...categories.tagDriveGauge].sort(sortNumerically),
+        tagSaGauge: [...categories.tagSaGauge].sort(sortNumerically),
+    };
   }, [comboParts]);
 
   const filteredParts = useMemo(() => {
-    if (filters.tags.length === 0) {
-      return comboParts;
-    }
-    return comboParts.filter(part =>
-        filters.tags.every(tag => part.tags && part.tags.includes(tag))
-    );
+    return comboParts.filter(part => {
+      for (const key of Object.keys(TAG_CATEGORIES) as TagCategoryKey[]) {
+        const selectedTags = filters.tags[key];
+        if (selectedTags.size === 0) continue;
+
+        if (key === 'tagCondition') {
+          const partConditionTags = part.tagCondition;
+          if (!partConditionTags || partConditionTags.length === 0) {
+            return false;
+          }
+          // The part must have ALL selected condition tags (AND logic).
+          for (const selected of selectedTags) {
+            if (!partConditionTags.includes(selected)) {
+              return false;
+            }
+          }
+        } else {
+          const partTag = part[key] as string | undefined;
+          if (!partTag || !selectedTags.has(partTag)) {
+            return false;
+          }
+        }
+      }
+      return true;
+    });
   }, [filters.tags, comboParts]);
   
   // Reset "Show All" state when filters change
@@ -396,7 +494,6 @@ const App = () => {
   
   const toggleCharSelectExpansion = () => setIsCharSelectExpanded(prev => !prev);
   const toggleLibraryExpansion = () => setIsLibraryExpanded(prev => !prev);
-  const toggleSampleCombosExpansion = () => setIsSampleCombosExpanded(prev => !prev);
   const handleShowMoreClick = () => {
     if (isMobileView) {
       setIsPartPickerModalOpen(true);
@@ -660,58 +757,79 @@ const App = () => {
               <span className={`expand-icon ${isLibraryExpanded ? 'expanded' : ''}`} aria-hidden="true">▼</span>
             </h2>
             <div className="collapsible-content">
-              {sampleCombos.length > 0 && (
-                <div className={`sample-combos-container ${isSampleCombosExpanded ? 'expanded' : ''}`}>
-                  <h3
-                    onClick={isMobileView ? toggleSampleCombosExpansion : undefined}
-                    role={isMobileView ? "button" : undefined}
-                    aria-expanded={isSampleCombosExpanded}
-                    aria-controls="sample-combos-list-container"
-                    tabIndex={isMobileView ? 0 : undefined}
-                    onKeyDown={isMobileView ? (e) => { if (e.key === 'Enter' || e.key === ' ') toggleSampleCombosExpansion(); } : undefined}
-                  >
-                    <span>Sample Combos</span>
-                    <span className={`expand-icon ${isSampleCombosExpanded ? 'expanded' : ''}`} aria-hidden="true">▼</span>
-                  </h3>
-                  <div id="sample-combos-list-container" className="sample-combos-content">
-                    <div className="sample-combos-list">
-                      {sampleCombos.map((sample, index) => (
-                        <button key={index} className="sample-combo-button" onClick={() => handleLoadSampleCombo(sample)}>
-                          {sample.name}
+              <div className="library-tabs">
+                <button
+                  className={`library-tab-button ${activeLibraryTab === 'parts' ? 'active' : ''}`}
+                  onClick={() => setActiveLibraryTab('parts')}
+                >
+                  パーツ検索
+                </button>
+                <button
+                  className={`library-tab-button ${activeLibraryTab === 'samples' ? 'active' : ''}`}
+                  onClick={() => setActiveLibraryTab('samples')}
+                  disabled={sampleCombos.length === 0}
+                >
+                  サンプルコンボ
+                </button>
+              </div>
+
+              {activeLibraryTab === 'parts' && (
+                <>
+                  <div className="tag-filter-container">
+                    {Object.entries(TAG_CATEGORIES).map(([categoryKey, categoryName]) => {
+                      const key = categoryKey as TagCategoryKey;
+                      const tagsForCategory = availableTags[key];
+                      if (!tagsForCategory || tagsForCategory.length === 0) return null;
+
+                      return (
+                        <div key={key} className="tag-category">
+                          <h4>{categoryName}</h4>
+                          <div className="tag-buttons">
+                            {tagsForCategory.map(tag => (
+                              <button
+                                key={tag}
+                                className={`tag-filter-button ${filters.tags[key].has(tag) ? 'active' : ''}`}
+                                onClick={() => handleTagClick(key, tag)}
+                              >
+                                {tag}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="parts-list" id="parts-list-container">
+                    {isLoading ? (
+                      <div className="loading-spinner" aria-label="Loading parts..."></div>
+                    ) : displayedParts.length > 0 ? (
+                      displayedParts.map(part => <PartCard key={part.id} part={part} onPartClick={handleAddPartToSequence} />)
+                    ) : (
+                      <p className="no-parts-found">No matching parts found.</p>
+                    )}
+                  </div>
+                  {!isLoading && filteredParts.length > INITIAL_PARTS_LIMIT && (
+                      <div className="show-more-container">
+                        <button onClick={handleShowMoreClick} className="show-more-button">
+                          {isMobileView || !showAllParts
+                            ? `もっと見る (${filteredParts.length - (isMobileView ? 0 : INITIAL_PARTS_LIMIT)}件)`
+                            : '表示を減らす'}
                         </button>
-                      ))}
-                    </div>
+                      </div>
+                  )}
+                </>
+              )}
+
+              {activeLibraryTab === 'samples' && (
+                <div className="sample-combos-list-container">
+                  <div className="sample-combos-list">
+                    {sampleCombos.map((sample, index) => (
+                      <button key={index} className="sample-combo-button" onClick={() => handleLoadSampleCombo(sample)}>
+                        {sample.name}
+                      </button>
+                    ))}
                   </div>
                 </div>
-              )}
-              <div className="tag-filter-container">
-                {availableTags.map(tag => (
-                  <button
-                    key={tag}
-                    className={`tag-filter-button ${filters.tags.includes(tag) ? 'active' : ''}`}
-                    onClick={() => handleTagClick(tag)}
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
-              <div className="parts-list" id="parts-list-container">
-                {isLoading ? (
-                  <div className="loading-spinner" aria-label="Loading parts..."></div>
-                ) : displayedParts.length > 0 ? (
-                  displayedParts.map(part => <PartCard key={part.id} part={part} onPartClick={handleAddPartToSequence} />)
-                ) : (
-                  <p className="no-parts-found">No matching parts found.</p>
-                )}
-              </div>
-              {!isLoading && filteredParts.length > INITIAL_PARTS_LIMIT && (
-                  <div className="show-more-container">
-                    <button onClick={handleShowMoreClick} className="show-more-button">
-                      {isMobileView || !showAllParts
-                        ? `もっと見る (${filteredParts.length - (isMobileView ? 0 : INITIAL_PARTS_LIMIT)}件)`
-                        : '表示を減らす'}
-                    </button>
-                  </div>
               )}
             </div>
           </aside>

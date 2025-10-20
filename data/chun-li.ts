@@ -7,7 +7,6 @@ export const chunliComboParts: ComboPart[] = [
     name: 'chun-li-001',
     comboparts: '気功拳',
     videoUrl: 'https://www.streetfighter.com/6/character/chun-li/frame/special#Kikoken',
-    tags: ['starter', 'projectile'],
     order: 10,
   },
   {
@@ -16,7 +15,6 @@ export const chunliComboParts: ComboPart[] = [
     name: 'chun-li-002',
     comboparts: '百裂脚',
     videoUrl: 'https://www.streetfighter.com/6/character/chun-li/frame/special#Hyakuretsukyaku',
-    tags: ['combo-filler', 'ender'],
     order: 20,
   },
 ];

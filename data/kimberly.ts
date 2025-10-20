@@ -7,7 +7,6 @@ export const kimberlyComboParts: ComboPart[] = [
     name: 'kimberly-001',
     comboparts: '疾駆け',
     videoUrl: 'https://www.streetfighter.com/6/character/kimberly/frame/special#Hayagake',
-    tags: ['starter', 'extender'],
     order: 10,
   },
   {
@@ -16,7 +15,6 @@ export const kimberlyComboParts: ComboPart[] = [
     name: 'kimberly-002',
     comboparts: '武神イズナ落とし',
     videoUrl: 'https://www.streetfighter.com/6/character/kimberly/frame/special#BushinIzunaOtoshi',
-    tags: ['ender', 'air-throw'],
     order: 20,
   },
 ];

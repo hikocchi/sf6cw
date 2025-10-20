@@ -7,7 +7,6 @@ export const ehondaComboParts: ComboPart[] = [
     name: 'e-honda-001',
     comboparts: '百裂張り手',
     videoUrl: 'https://www.streetfighter.com/6/character/e.honda/frame/special#HyakuretsuHarite',
-    tags: ['starter', 'combo-filler'],
     order: 10,
   },
   {
@@ -16,7 +15,6 @@ export const ehondaComboParts: ComboPart[] = [
     name: 'e-honda-002',
     comboparts: 'スーパー頭突き',
     videoUrl: 'https://www.streetfighter.com/6/character/e.honda/frame/special#SuperZutsuki',
-    tags: ['ender', 'anti-air'],
     order: 20,
   },
 ];

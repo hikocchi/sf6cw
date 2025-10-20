@@ -7,7 +7,6 @@ export const jpComboParts: ComboPart[] = [
     name: 'jp-001',
     comboparts: 'トリグラフ',
     videoUrl: 'https://www.streetfighter.com/6/character/jp/frame/special#Triglav',
-    tags: ['starter', 'projectile'],
     order: 10,
   },
   {
@@ -16,7 +15,6 @@ export const jpComboParts: ComboPart[] = [
     name: 'jp-002',
     comboparts: 'アブニマーチ',
     videoUrl: 'https://www.streetfighter.com/6/character/jp/frame/special#Amnesia',
-    tags: ['counter', 'ender'],
     order: 20,
   },
 ];

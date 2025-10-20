@@ -2,7 +2,7 @@ import type { ComboPart } from '../index.tsx';
 
 // このツールで利用可能なキャラクターのリスト
 export const AVAILABLE_CHARACTERS = [
-  'リュウ'
+  'リュウ','ラシード'
 ];
 
 /**

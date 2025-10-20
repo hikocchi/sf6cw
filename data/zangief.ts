@@ -7,7 +7,6 @@ export const zangiefComboParts: ComboPart[] = [
     name: 'zangief-001',
     comboparts: 'スクリューパイルドライバー',
     videoUrl: 'https://www.streetfighter.com/6/character/zangief/frame/special#ScrewPiledriver',
-    tags: ['starter', 'command-grab'],
     order: 10,
   },
   {
@@ -16,7 +15,6 @@ export const zangiefComboParts: ComboPart[] = [
     name: 'zangief-002',
     comboparts: 'ダブルラリアット',
     videoUrl: 'https://www.streetfighter.com/6/character/zangief/frame/special#DoubleLariat',
-    tags: ['anti-air', 'combo-filler'],
     order: 20,
   },
 ];

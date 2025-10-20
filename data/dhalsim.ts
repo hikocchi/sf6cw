@@ -7,7 +7,6 @@ export const dhalsimComboParts: ComboPart[] = [
     name: 'dhalsim-001',
     comboparts: 'ヨガファイア',
     videoUrl: 'https://www.streetfighter.com/6/character/dhalsim/frame/special#YogaFire',
-    tags: ['starter', 'projectile'],
     order: 10,
   },
   {
@@ -16,7 +15,6 @@ export const dhalsimComboParts: ComboPart[] = [
     name: 'dhalsim-002',
     comboparts: 'ヨガテレポート',
     videoUrl: 'https://www.streetfighter.com/6/character/dhalsim/frame/special#YogaTeleport',
-    tags: ['extender', 'mobility'],
     order: 20,
   },
 ];

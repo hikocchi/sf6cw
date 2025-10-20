@@ -7,7 +7,6 @@ export const lukeComboParts: ComboPart[] = [
     name: 'luke-001',
     comboparts: 'サンドブラスト',
     videoUrl: 'https://www.streetfighter.com/6/character/luke/frame/special#SandBlast',
-    tags: ['starter', 'projectile'],
     order: 10,
   },
   {
@@ -16,7 +15,6 @@ export const lukeComboParts: ComboPart[] = [
     name: 'luke-002',
     comboparts: 'ODフラッシュナックル',
     videoUrl: 'https://www.streetfighter.com/6/character/luke/frame/special#ODFlashKnuckle',
-    tags: ['combo-filler', 'od'],
     order: 20,
   },
 ];

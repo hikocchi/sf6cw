@@ -7,7 +7,6 @@ export const marisaComboParts: ComboPart[] = [
     name: 'marisa-001',
     comboparts: 'グラディウス',
     videoUrl: 'https://www.streetfighter.com/6/character/marisa/frame/special#Gladius',
-    tags: ['starter', 'armor'],
     order: 10,
   },
   {
@@ -16,7 +15,6 @@ export const marisaComboParts: ComboPart[] = [
     name: 'marisa-002',
     comboparts: 'ファランクス',
     videoUrl: 'https://www.streetfighter.com/6/character/marisa/frame/special#Phalanx',
-    tags: ['ender', 'heavy'],
     order: 20,
   },
 ];

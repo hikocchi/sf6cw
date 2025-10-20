@@ -7,7 +7,6 @@ export const blankaComboParts: ComboPart[] = [
     name: 'blanka-001',
     comboparts: 'ローリングアタック',
     videoUrl: 'https://www.streetfighter.com/6/character/blanka/frame/special#RollingAttack',
-    tags: ['starter', 'combo-filler'],
     order: 10,
   },
   {
@@ -16,7 +15,6 @@ export const blankaComboParts: ComboPart[] = [
     name: 'blanka-002',
     comboparts: 'エレクトリックサンダー',
     videoUrl: 'https://www.streetfighter.com/6/character/blanka/frame/special#ElectricThunder',
-    tags: ['ender', 'special'],
     order: 20,
   },
 ];

@@ -7,7 +7,6 @@ export const juriComboParts: ComboPart[] = [
     name: 'juri-001',
     comboparts: '歳破衝',
     videoUrl: 'https://www.streetfighter.com/6/character/juri/frame/special#Saihasho',
-    tags: ['starter', 'projectile'],
     order: 10,
   },
   {
@@ -16,7 +15,6 @@ export const juriComboParts: ComboPart[] = [
     name: 'juri-002',
     comboparts: '風破刃',
     videoUrl: 'https://www.streetfighter.com/6/character/juri/frame/special#Fuhajin',
-    tags: ['extender', 'setup'],
     order: 20,
   },
 ];

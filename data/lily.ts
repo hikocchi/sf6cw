@@ -7,7 +7,6 @@ export const lilyComboParts: ComboPart[] = [
     name: 'lily-001',
     comboparts: 'コンドルウィンド',
     videoUrl: 'https://www.streetfighter.com/6/character/lily/frame/special#CondorWind',
-    tags: ['setup', 'special'],
     order: 10,
   },
   {
@@ -16,7 +15,6 @@ export const lilyComboParts: ComboPart[] = [
     name: 'lily-002',
     comboparts: 'コンドルスパイア',
     videoUrl: 'https://www.streetfighter.com/6/character/lily/frame/special#CondorSpire',
-    tags: ['starter', 'combo-filler'],
     order: 20,
   },
 ];
