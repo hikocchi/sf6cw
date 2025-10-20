@@ -285,74 +285,37 @@ const SequenceItem: React.FC<{
   );
 };
 
-const App = () => {
-  const CHARACTERS = AVAILABLE_CHARACTERS;
+// --- Custom Hooks ---
+
+const useDeviceState = () => {
+  const [isMobileView, setIsMobileView] = useState(window.innerWidth <= MOBILE_BREAKPOINT);
+  const isTouchDevice = useMemo(() => 'ontouchstart' in window || navigator.maxTouchPoints > 0, []);
+
+  useEffect(() => {
+    const checkIsMobile = () => setIsMobileView(window.innerWidth <= MOBILE_BREAKPOINT);
+    window.addEventListener('resize', checkIsMobile);
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
+
+  return { isMobileView, isTouchDevice };
+};
+
+const useCharacterData = (character: string) => {
   const [comboParts, setComboParts] = useState<ComboPart[]>([]);
   const [sampleCombos, setSampleCombos] = useState<SampleCombo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
-  const initialFilters = {
-    character: CHARACTERS[0] || '',
-    tags: {
-      tagType: new Set<string>(),
-      tagCondition: new Set<string>(),
-      startCondition: new Set<string>(),
-      tagDriveGauge: new Set<string>(),
-      tagSaGauge: new Set<string>(),
-    }
-  };
 
-  const [filters, setFilters] = useState(initialFilters);
-  const [sequence, setSequence] = useState<SequencePart[]>([]);
-  const [currentPlayingIndex, setCurrentPlayingIndex] = useState<number | null>(null);
-  const [isSequencePaused, setIsSequencePaused] = useState(false);
-  const [isYtApiReady, setYtApiReady] = useState(false);
-  const [isCharSelectExpanded, setIsCharSelectExpanded] = useState(true);
-  const [isLibraryExpanded, setIsLibraryExpanded] = useState(true);
-  const [isHowToModalOpen, setIsHowToModalOpen] = useState(false);
-  const [draggedId, setDraggedId] = useState<string | null>(null);
-  const [isMobileView, setIsMobileView] = useState(window.innerWidth <= MOBILE_BREAKPOINT);
-  const [showAllParts, setShowAllParts] = useState(false);
-  const [isPartPickerModalOpen, setIsPartPickerModalOpen] = useState(false);
-  const [dropTarget, setDropTarget] = useState<{ index: number | null; position: 'top' | 'bottom' | null }>({ index: null, position: null });
-  const [activeLibraryTab, setActiveLibraryTab] = useState<'parts' | 'samples'>('parts');
-  const [touchDragState, setTouchDragState] = useState<{
-    id: string;
-    startY: number;
-    elementInitialTop: number;
-    initialScrollTop: number;
-    currentY: number;
-  } | null>(null);
-
-  const isTouchDevice = useMemo(() => 'ontouchstart' in window || navigator.maxTouchPoints > 0, []);
-
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const ytPlayerRef = useRef<any>(null);
-  const ytPlayerContainerRef = useRef<HTMLDivElement>(null);
-  const ytTimeCheckIntervalRef = useRef<number | null>(null);
-  const sequenceListRef = useRef<HTMLDivElement>(null);
-  const longPressTimerRef = useRef<number>();
-  // FIX: Changed `touch: Touch` to `touch: React.Touch` to match the event object from React.
-  const touchStartInfoRef = useRef<{ part: SequencePart; element: HTMLElement; touch: React.Touch; } | null>(null);
-
-
-  const isSequencePausedRef = useRef(isSequencePaused);
-  useEffect(() => {
-    isSequencePausedRef.current = isSequencePaused;
-  }, [isSequencePaused]);
-  
-  // Load character data when character filter changes
   useEffect(() => {
     const loadData = async () => {
-      if (!filters.character) return;
+      if (!character) return;
       setIsLoading(true);
       try {
-        const data = await fetchCharacterData(filters.character);
+        const data = await fetchCharacterData(character);
         const sortedParts = data.comboParts.sort((a, b) => a.order - b.order);
         setComboParts(sortedParts);
         setSampleCombos(data.sampleCombos);
       } catch (error) {
-        console.error(`Failed to load data for ${filters.character}`, error);
+        console.error(`Failed to load data for ${character}`, error);
         setComboParts([]);
         setSampleCombos([]);
       } finally {
@@ -360,70 +323,45 @@ const App = () => {
       }
     };
     loadData();
-  }, [filters.character]);
-  
-  useEffect(() => {
-    const checkIsMobile = () => {
-        const isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
-        setIsMobileView(isMobile);
-        if (!isMobile) {
-            setIsCharSelectExpanded(true);
-            setIsLibraryExpanded(true);
-        }
-    };
+  }, [character]);
 
-    checkIsMobile();
-    window.addEventListener('resize', checkIsMobile);
-    return () => window.removeEventListener('resize', checkIsMobile);
-}, []);
+  return { comboParts, sampleCombos, isLoading };
+};
 
-
-  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setFilters({ ...initialFilters, character: e.target.value });
+const useFilters = (comboParts: ComboPart[]) => {
+  const initialFilterState = {
+    tagType: new Set<string>(),
+    tagCondition: new Set<string>(),
+    startCondition: new Set<string>(),
+    tagDriveGauge: new Set<string>(),
+    tagSaGauge: new Set<string>(),
   };
+  const [tags, setTags] = useState(initialFilterState);
+
+  const resetFilters = () => setTags(initialFilterState);
 
   const handleTagClick = (category: TagCategoryKey, tag: string) => {
-    setFilters(prev => {
-      const newCategoryTags = new Set(prev.tags[category]);
-      if (newCategoryTags.has(tag)) {
-        newCategoryTags.delete(tag);
-      } else {
-        newCategoryTags.add(tag);
-      }
-      return {
-        ...prev,
-        tags: {
-          ...prev.tags,
-          [category]: newCategoryTags,
-        },
-      };
+    setTags(prev => {
+      const newCategoryTags = new Set(prev[category]);
+      if (newCategoryTags.has(tag)) newCategoryTags.delete(tag);
+      else newCategoryTags.add(tag);
+      return { ...prev, [category]: newCategoryTags };
     });
   };
 
   const availableTags = useMemo(() => {
     const categories: { [K in TagCategoryKey]: Set<string> } = {
-        tagType: new Set<string>(),
-        tagCondition: new Set<string>(),
-        startCondition: new Set<string>(),
-        tagDriveGauge: new Set<string>(),
-        tagSaGauge: new Set<string>(),
+        tagType: new Set(), tagCondition: new Set(), startCondition: new Set(),
+        tagDriveGauge: new Set(), tagSaGauge: new Set(),
     };
     for (const part of comboParts) {
         if (part.tagType) categories.tagType.add(part.tagType);
         if (part.startCondition) categories.startCondition.add(part.startCondition);
-        if (part.tagCondition) {
-          part.tagCondition.forEach(tag => categories.tagCondition.add(tag));
-        }
+        if (part.tagCondition) part.tagCondition.forEach(tag => categories.tagCondition.add(tag));
         if (part.tagDriveGauge) categories.tagDriveGauge.add(part.tagDriveGauge);
         if (part.tagSaGauge) categories.tagSaGauge.add(part.tagSaGauge);
     }
-    
-    const sortNumerically = (a: string, b: string) => {
-        const numA = parseInt(a.match(/\d+/)?.[0] || '0');
-        const numB = parseInt(b.match(/\d+/)?.[0] || '0');
-        return numA - numB;
-    };
-    
+    const sortNumerically = (a: string, b: string) => (parseInt(a.match(/\d+/)?.[0] || '0') - parseInt(b.match(/\d+/)?.[0] || '0'));
     return {
         tagType: [...categories.tagType].sort(),
         startCondition: [...categories.startCondition].sort(),
@@ -436,289 +374,103 @@ const App = () => {
   const filteredParts = useMemo(() => {
     return comboParts.filter(part => {
       for (const key of Object.keys(TAG_CATEGORIES) as TagCategoryKey[]) {
-        const selectedTags = filters.tags[key];
+        const selectedTags = tags[key];
         if (selectedTags.size === 0) continue;
-
         if (key === 'tagCondition') {
-          const partConditionTags = part.tagCondition;
-          if (!partConditionTags || partConditionTags.length === 0) {
-            return false;
-          }
-          // The part must have ALL selected condition tags (AND logic).
-          for (const selected of selectedTags) {
-            if (!partConditionTags.includes(selected)) {
-              return false;
-            }
-          }
+          if (!part.tagCondition || !([...selectedTags].every(t => part.tagCondition!.includes(t)))) return false;
         } else {
-          const partTag = part[key] as string | undefined;
-          if (!partTag || !selectedTags.has(partTag)) {
-            return false;
-          }
+          if (!part[key] || !selectedTags.has(part[key] as string)) return false;
         }
       }
       return true;
     });
-  }, [filters.tags, comboParts]);
-  
-  // Reset "Show All" state when filters change
-  useEffect(() => {
-    setShowAllParts(false);
-  }, [filters]);
-  
-  const displayedParts = useMemo(() => {
-    return showAllParts ? filteredParts : filteredParts.slice(0, INITIAL_PARTS_LIMIT);
-  }, [filteredParts, showAllParts]);
-  
-  const hardStopSequence = useCallback(() => {
-    setCurrentPlayingIndex(null);
-    setIsSequencePaused(false);
-  }, []);
+  }, [tags, comboParts]);
 
-  const handleAddPartToSequence = (part: ComboPart) => {
-    hardStopSequence();
-    const newSequencePart: SequencePart = {
-      ...part,
-      sequenceId: `${part.id}-${Date.now()}`
-    };
+  return { tags, handleTagClick, resetFilters, availableTags, filteredParts };
+};
+
+const useSequence = () => {
+  const [sequence, setSequence] = useState<SequencePart[]>([]);
+
+  const addPartToSequence = (part: ComboPart) => {
+    const newSequencePart: SequencePart = { ...part, sequenceId: `${part.id}-${Date.now()}` };
     setSequence(prev => [...prev, newSequencePart]);
   };
 
-  const handleRemoveFromSequence = (sequenceId: string) => {
-    hardStopSequence();
+  const removeFromSequence = (sequenceId: string) => {
     setSequence(prev => prev.filter(p => p.sequenceId !== sequenceId));
   };
-  
-  const handleClearSequence = () => {
-    hardStopSequence();
-    setSequence([]);
-  };
-  
-  const handleLoadSampleCombo = (sample: SampleCombo) => {
-    hardStopSequence();
+
+  const clearSequence = () => setSequence([]);
+
+  const loadSampleCombo = (sample: SampleCombo, allParts: ComboPart[]) => {
     const newSequence = sample.parts.map(partId => {
-      const part = comboParts.find(p => p.id === partId);
+      const part = allParts.find(p => p.id === partId);
       if (!part) return null;
       return { ...part, sequenceId: `${part.id}-${Date.now()}-${Math.random()}` };
     }).filter((p): p is SequencePart => p !== null);
     setSequence(newSequence);
   };
 
-  const handleVideoEnded = useCallback(() => {
-    if (isSequencePausedRef.current) {
-      return;
-    }
-  
-    if (currentPlayingIndex !== null && currentPlayingIndex < sequence.length - 1) {
-      setCurrentPlayingIndex(currentPlayingIndex + 1);
-    } else {
-      setCurrentPlayingIndex(null);
-      setIsSequencePaused(false);
-    }
-  }, [currentPlayingIndex, sequence]);
-  
-  const playSequence = () => {
-    if (sequence.length === 0) return;
-  
-    setIsSequencePaused(false);
-  
-    if (currentPlayingIndex !== null) {
-      // It's paused, so resume
-      if (isCurrentVideoYouTube && ytPlayerRef.current?.playVideo) {
-        ytPlayerRef.current.playVideo();
-      } else if (videoRef.current) {
-        videoRef.current.play().catch(console.error);
-      }
-    } else {
-      // It's stopped, so play from start
-      setCurrentPlayingIndex(0);
-    }
-  };
-  
-  const handlePause = () => {
-    if (currentPlayingIndex === null) return;
-    setIsSequencePaused(true);
-    if (isCurrentVideoYouTube && ytPlayerRef.current?.pauseVideo) {
-      ytPlayerRef.current.pauseVideo();
-    } else if (videoRef.current) {
-      videoRef.current.pause();
-    }
-  };
-
-  const handleRewind = () => {
-    if (currentPlayingIndex === null) return;
-    const currentPart = sequence[currentPlayingIndex];
-    const startTime = currentPart.startTime || 0;
-
-    if (isCurrentVideoYouTube && ytPlayerRef.current) {
-        const currentTime = ytPlayerRef.current.getCurrentTime();
-        const newTime = Math.max(startTime, currentTime - REWIND_SECONDS);
-        ytPlayerRef.current.seekTo(newTime, true);
-    } else if (videoRef.current) {
-        const currentTime = videoRef.current.currentTime;
-        videoRef.current.currentTime = Math.max(startTime, currentTime - REWIND_SECONDS);
-    }
-  };
-  
-  const toggleCharSelectExpansion = () => setIsCharSelectExpanded(prev => !prev);
-  const toggleLibraryExpansion = () => setIsLibraryExpanded(prev => !prev);
-  const handleShowMoreClick = () => {
-    if (isMobileView) {
-      setIsPartPickerModalOpen(true);
-    } else {
-      setShowAllParts(prev => !prev);
-    }
-  };
-
-
-  // --- Drag and Drop Logic ---
-
-  const handleDragStart = (id: string) => setDraggedId(id);
-
-  const handleDragEnd = () => {
-    setDraggedId(null);
-    setDropTarget({ index: null, position: null });
-  };
-  
-  const handleDrop = useCallback(() => {
-    if (!draggedId || dropTarget.index === null) return;
-
-    setSequence(currentSequence => {
-        const draggedIndex = currentSequence.findIndex(p => p.sequenceId === draggedId);
-        if (draggedIndex === -1) return currentSequence;
-
-        const newSequence = [...currentSequence];
-        const [draggedItem] = newSequence.splice(draggedIndex, 1);
-
-        let targetIndex = dropTarget.index;
-        // Adjust index if item is moved downwards
-        if (draggedIndex < targetIndex) {
-            targetIndex--;
-        }
-
-        const insertAtIndex = dropTarget.position === 'top' ? targetIndex : targetIndex + 1;
-        newSequence.splice(insertAtIndex, 0, draggedItem);
-        return newSequence;
-    });
-  }, [draggedId, dropTarget.index, dropTarget.position]);
-
-
-  // --- Desktop Drag Handlers ---
-  const handleItemDragOver = (index: number, e: React.DragEvent) => {
-    e.preventDefault();
-    if (sequence[index]?.sequenceId === draggedId) return;
-
-    const targetElement = e.currentTarget as HTMLDivElement;
-    const rect = targetElement.getBoundingClientRect();
-    const isTopHalf = e.clientY < rect.top + rect.height / 2;
-    const newPosition = isTopHalf ? 'top' : 'bottom';
-
-    if (dropTarget.index !== index || dropTarget.position !== newPosition) {
-        setDropTarget({ index, position: newPosition });
-    }
-  };
-
-  // --- Mobile Touch Drag Handlers ---
-
-  const handleTouchDragMove = useCallback((e: TouchEvent) => {
-    if (!draggedId) return;
-    if (e.cancelable) e.preventDefault();
-
-    const touchY = e.touches[0].clientY;
-    setTouchDragState(prev => prev ? { ...prev, currentY: touchY } : null);
-
-    const sequenceItems = Array.from(sequenceListRef.current?.children || [])
-      .filter(child => child.classList.contains('sequence-item'));
-
-    let newDropTarget: { index: number | null; position: 'top' | 'bottom' | null } = { index: null, position: null };
-
-    const targetItem = sequenceItems.find(item => {
-      const itemIndex = sequenceItems.indexOf(item);
-      if (sequence[itemIndex]?.sequenceId === draggedId) return false;
-      const rect = item.getBoundingClientRect();
-      return touchY >= rect.top && touchY <= rect.bottom;
-    });
-
-    if (targetItem) {
-      const rect = targetItem.getBoundingClientRect();
-      const targetIndex = sequenceItems.indexOf(targetItem);
-      const isTopHalf = touchY < rect.top + rect.height / 2;
-      newDropTarget = { index: targetIndex, position: isTopHalf ? 'top' : 'bottom' };
-    } else if (sequenceItems.length > 0) {
-      const firstItem = sequenceItems[0];
-      const lastItem = sequenceItems[sequenceItems.length - 1];
-      if (touchY < firstItem.getBoundingClientRect().top) {
-        newDropTarget = { index: 0, position: 'top' };
-      } else if (touchY > lastItem.getBoundingClientRect().bottom) {
-        newDropTarget = { index: sequenceItems.indexOf(lastItem), position: 'bottom' };
-      }
-    }
-
-    if (dropTarget.index !== newDropTarget.index || dropTarget.position !== newDropTarget.position) {
-      setDropTarget(newDropTarget);
-    }
-  }, [draggedId, sequence, dropTarget.index, dropTarget.position]);
-
-
-  const handleTouchDragEnd = useCallback(() => {
-    window.removeEventListener('touchmove', handleTouchDragMove);
-    window.removeEventListener('touchend', handleTouchDragEnd);
-    window.removeEventListener('touchcancel', handleTouchDragEnd);
-    
-    if (draggedId && dropTarget.index !== null) {
-      handleDrop();
-    }
-    
-    handleDragEnd();
-    setTouchDragState(null);
-  }, [draggedId, dropTarget, handleDrop, handleDragEnd, handleTouchDragMove]);
-
-  const initTouchDrag = useCallback(() => {
-    if (!touchStartInfoRef.current) return;
-    const { part, element, touch } = touchStartInfoRef.current;
-    const list = sequenceListRef.current;
-    if (!list) return;
-
-    handleDragStart(part.sequenceId);
-    setTouchDragState({
-        id: part.sequenceId,
-        startY: touch.clientY,
-        elementInitialTop: element.offsetTop,
-        initialScrollTop: list.scrollTop,
-        currentY: touch.clientY,
-    });
-
-    window.addEventListener('touchmove', handleTouchDragMove, { passive: false });
-    window.addEventListener('touchend', handleTouchDragEnd);
-    window.addEventListener('touchcancel', handleTouchDragEnd);
-  }, [handleDragStart, handleTouchDragMove, handleTouchDragEnd]);
-
-  const handleMobileDragStart = (part: SequencePart, e: React.TouchEvent) => {
-    const element = (e.currentTarget as HTMLElement).closest('.sequence-item');
-    // FIX: Ensure the found element is an HTMLElement instance before proceeding.
-    if (!(element instanceof HTMLElement)) {
-      return;
-    }
-    touchStartInfoRef.current = { part, element, touch: e.touches[0] };
-
-    clearTimeout(longPressTimerRef.current);
-    longPressTimerRef.current = window.setTimeout(initTouchDrag, LONG_PRESS_DURATION);
-  };
-  
-  const cancelLongPress = () => {
-    clearTimeout(longPressTimerRef.current);
-  };
-
-
-  // Combo Stats Calculation
   const comboStats = useMemo(() => {
     const totalDamage = sequence.reduce((sum, part) => sum + (part.damage || 0), 0);
     const finalFrameAdvantage = sequence.length > 0 ? sequence[sequence.length - 1].endFrameAdvantage : undefined;
     return { totalDamage, finalFrameAdvantage };
   }, [sequence]);
 
+  return { sequence, setSequence, addPartToSequence, removeFromSequence, clearSequence, loadSampleCombo, comboStats };
+};
 
-  // Load YouTube API script
+const useVideoPlayer = (sequence: SequencePart[]) => {
+  const [currentPlayingIndex, setCurrentPlayingIndex] = useState<number | null>(null);
+  const [isSequencePaused, setIsSequencePaused] = useState(false);
+  const [isYtApiReady, setYtApiReady] = useState(false);
+
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const ytPlayerRef = useRef<any>(null);
+  const ytPlayerContainerRef = useRef<HTMLDivElement>(null);
+  const ytTimeCheckIntervalRef = useRef<number | null>(null);
+  const isSequencePausedRef = useRef(isSequencePaused);
+  useEffect(() => { isSequencePausedRef.current = isSequencePaused; }, [isSequencePaused]);
+
+  const hardStopSequence = useCallback(() => {
+    setCurrentPlayingIndex(null);
+    setIsSequencePaused(false);
+  }, []);
+
+  const playSequence = () => {
+    if (sequence.length === 0) return;
+    setIsSequencePaused(false);
+    if (currentPlayingIndex !== null) { // Resume
+      const isYouTube = sequence[currentPlayingIndex]?.videoUrl.includes('youtube.com');
+      if (isYouTube && ytPlayerRef.current?.playVideo) ytPlayerRef.current.playVideo();
+      else if (videoRef.current) videoRef.current.play().catch(console.error);
+    } else { // Play from start
+      setCurrentPlayingIndex(0);
+    }
+  };
+
+  const pauseSequence = () => {
+    if (currentPlayingIndex === null) return;
+    setIsSequencePaused(true);
+    const isYouTube = sequence[currentPlayingIndex]?.videoUrl.includes('youtube.com');
+    if (isYouTube && ytPlayerRef.current?.pauseVideo) ytPlayerRef.current.pauseVideo();
+    else if (videoRef.current) videoRef.current.pause();
+  };
+  
+  const rewindSequence = () => {
+    if (currentPlayingIndex === null) return;
+    const currentPart = sequence[currentPlayingIndex];
+    const startTime = currentPart.startTime || 0;
+    const isYouTube = currentPart.videoUrl.includes('youtube.com');
+    if (isYouTube && ytPlayerRef.current) {
+      const newTime = Math.max(startTime, ytPlayerRef.current.getCurrentTime() - REWIND_SECONDS);
+      ytPlayerRef.current.seekTo(newTime, true);
+    } else if (videoRef.current) {
+      videoRef.current.currentTime = Math.max(startTime, videoRef.current.currentTime - REWIND_SECONDS);
+    }
+  };
+  
   useEffect(() => {
     const hasYouTubeVideo = sequence.some(part => part.videoUrl.includes('youtube.com') || part.videoUrl.includes('youtu.be')) || HOW_TO_USE_VIDEO_ID;
     if (hasYouTubeVideo && !window.YT) {
@@ -736,24 +488,24 @@ const App = () => {
 
   const currentVideoUrl = currentPlayingIndex !== null ? sequence[currentPlayingIndex]?.videoUrl : null;
   const isCurrentVideoYouTube = useMemo(() => !!currentVideoUrl && (currentVideoUrl.includes('youtube.com') || currentVideoUrl.includes('youtu.be')), [currentVideoUrl]);
-
+  
   const getYouTubeVideoId = useCallback((url: string): string | null => {
       if (!url) return null;
-      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-      const match = url.match(regExp);
+      const match = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
       return (match && match[2].length === 11) ? match[2] : null;
   }, []);
-
+  
   useEffect(() => {
-    // Clear any lingering interval from a previous render
-    if (ytTimeCheckIntervalRef.current) {
-      clearInterval(ytTimeCheckIntervalRef.current);
-      ytTimeCheckIntervalRef.current = null;
-    }
+    if (currentPlayingIndex === null || !currentVideoUrl) return;
 
-    if (currentPlayingIndex === null || !currentVideoUrl) {
-      return;
-    }
+    const handleVideoEnded = () => {
+      if (isSequencePausedRef.current) return;
+      if (currentPlayingIndex < sequence.length - 1) {
+        setCurrentPlayingIndex(currentPlayingIndex + 1);
+      } else {
+        hardStopSequence();
+      }
+    };
 
     const currentPart = sequence[currentPlayingIndex];
     if (!currentPart) return;
@@ -761,116 +513,267 @@ const App = () => {
     const isLastPartInSequence = currentPlayingIndex === sequence.length - 1;
     const shouldCheckEndTime = currentPart.endTime && !isLastPartInSequence;
 
+    const videoElement = videoRef.current;
+
     if (isCurrentVideoYouTube) {
-        if(isYtApiReady && ytPlayerContainerRef.current) {
-            const videoId = getYouTubeVideoId(currentVideoUrl);
-            if (videoId) {
-                if (ytPlayerRef.current && typeof ytPlayerRef.current.destroy === 'function') {
-                    ytPlayerRef.current.destroy();
+      if(isYtApiReady && ytPlayerContainerRef.current) {
+        const videoId = getYouTubeVideoId(currentVideoUrl);
+        if (videoId) {
+          ytPlayerRef.current = new window.YT.Player(ytPlayerContainerRef.current.id, {
+            height: '100%', width: '100%', videoId,
+            playerVars: { 'autoplay': 1, 'controls': 1, 'playsinline': 1, 'start': Math.floor(currentPart.startTime || 0) },
+            events: {
+              'onStateChange': (event: any) => {
+                if (event.data === window.YT.PlayerState.PLAYING && shouldCheckEndTime) {
+                  ytTimeCheckIntervalRef.current = window.setInterval(() => {
+                    if (ytPlayerRef.current?.getCurrentTime() >= currentPart.endTime!) handleVideoEnded();
+                  }, 100);
+                } else if (event.data === window.YT.PlayerState.ENDED) {
+                  handleVideoEnded();
                 }
-                ytPlayerRef.current = new window.YT.Player(ytPlayerContainerRef.current.id, {
-                    height: '100%',
-                    width: '100%',
-                    videoId: videoId,
-                    playerVars: { 
-                      'autoplay': 1, 
-                      'controls': 1, 
-                      'playsinline': 1,
-                      'start': Math.floor(currentPart.startTime || 0)
-                    },
-                    events: {
-                        'onStateChange': (event: any) => {
-                            if (event.data === window.YT.PlayerState.PLAYING) {
-                                if (shouldCheckEndTime) {
-                                  ytTimeCheckIntervalRef.current = window.setInterval(() => {
-                                    const playerCurrentTime = ytPlayerRef.current.getCurrentTime();
-                                    if (playerCurrentTime >= currentPart.endTime) {
-                                      if (ytTimeCheckIntervalRef.current) {
-                                        clearInterval(ytTimeCheckIntervalRef.current);
-                                        ytTimeCheckIntervalRef.current = null;
-                                      }
-                                      handleVideoEnded();
-                                    }
-                                  }, 100);
-                                }
-                            }
-                            if (event.data === window.YT.PlayerState.ENDED) {
-                                if (ytTimeCheckIntervalRef.current) {
-                                    clearInterval(ytTimeCheckIntervalRef.current);
-                                    ytTimeCheckIntervalRef.current = null;
-                                }
-                                handleVideoEnded();
-                            }
-                        }
-                    }
-                });
-            }
-        }
-    } else { // Native Video Player Logic
-        if (videoRef.current) {
-            const videoElement = videoRef.current;
-            
-            const handleTimeUpdate = () => {
-                if (shouldCheckEndTime && videoElement.currentTime >= currentPart.endTime) {
-                    videoElement.removeEventListener('timeupdate', handleTimeUpdate);
-                    videoElement.removeEventListener('ended', handleVideoEndEvent);
-                    handleVideoEnded();
-                }
-            };
-            
-            const onLoadedMetadata = () => {
-                if (currentPart.startTime) {
-                    videoElement.currentTime = currentPart.startTime;
-                }
-                videoElement.play().catch(error => {
-                  console.error("Video play failed:", error);
-                });
-            };
-
-            const handleVideoEndEvent = () => {
-                handleVideoEnded();
-            };
-            
-            videoElement.addEventListener('loadedmetadata', onLoadedMetadata);
-            videoElement.addEventListener('timeupdate', handleTimeUpdate);
-            videoElement.addEventListener('ended', handleVideoEndEvent);
-            
-            videoElement.src = currentVideoUrl;
-            videoElement.load();
-
-            return () => {
-              if (videoElement) {
-                videoElement.removeEventListener('loadedmetadata', onLoadedMetadata);
-                videoElement.removeEventListener('timeupdate', handleTimeUpdate);
-                videoElement.removeEventListener('ended', handleVideoEndEvent);
-                videoElement.pause();
-                videoElement.removeAttribute('src');
-                videoElement.load();
               }
-            };
+            }
+          });
         }
+      }
+    } else {
+      const onLoadedMetadata = () => {
+        if (videoElement) {
+            if (currentPart.startTime) videoElement.currentTime = currentPart.startTime;
+            videoElement.play().catch(e => console.error("Video play failed:", e));
+        }
+      };
+      const handleTimeUpdate = () => {
+        if (videoElement && shouldCheckEndTime && videoElement.currentTime >= currentPart.endTime!) handleVideoEnded();
+      };
+      if (videoElement) {
+        videoElement.addEventListener('loadedmetadata', onLoadedMetadata);
+        videoElement.addEventListener('timeupdate', handleTimeUpdate);
+        videoElement.addEventListener('ended', handleVideoEnded);
+        videoElement.src = currentVideoUrl;
+        videoElement.load();
+      }
     }
 
-    return () => {
-      if (ytPlayerRef.current && typeof ytPlayerRef.current.destroy === 'function') {
-          ytPlayerRef.current.destroy();
-          ytPlayerRef.current = null;
+    return () => { // Unified Cleanup
+      if (ytPlayerRef.current?.destroy) {
+        ytPlayerRef.current.destroy();
+        ytPlayerRef.current = null;
       }
       if (ytTimeCheckIntervalRef.current) {
         clearInterval(ytTimeCheckIntervalRef.current);
         ytTimeCheckIntervalRef.current = null;
       }
+      if (videoElement) {
+        videoElement.removeEventListener('loadedmetadata', () => {});
+        videoElement.removeEventListener('timeupdate', () => {});
+        // FIX: The event listener for 'ended' was being removed with a new anonymous function
+        // instead of the original handler, which prevents it from being removed correctly.
+        // Changed to use the correct handler function `handleVideoEnded`.
+        videoElement.removeEventListener('ended', handleVideoEnded);
+        if (videoElement.src) {
+            videoElement.pause();
+            videoElement.removeAttribute('src');
+            videoElement.load();
+        }
+      }
     };
-  }, [currentPlayingIndex, isYtApiReady, currentVideoUrl, isCurrentVideoYouTube, handleVideoEnded, getYouTubeVideoId, sequence]);
+  }, [currentPlayingIndex, isYtApiReady, currentVideoUrl, isCurrentVideoYouTube, getYouTubeVideoId, sequence, hardStopSequence]);
+  
+  return {
+    refs: { videoRef, ytPlayerRef, ytPlayerContainerRef },
+    state: { currentPlayingIndex, isSequencePaused, isYtApiReady, currentVideoUrl, isCurrentVideoYouTube },
+    actions: { playSequence, pauseSequence, rewindSequence, hardStopSequence }
+  };
+};
 
+const useDragAndDrop = (sequence: SequencePart[], setSequence: React.Dispatch<React.SetStateAction<SequencePart[]>>, isTouchDevice: boolean) => {
+  const [draggedId, setDraggedId] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<{ index: number | null; position: 'top' | 'bottom' | null }>({ index: null, position: null });
+  const [touchDragState, setTouchDragState] = useState<{ id: string; startY: number; elementInitialTop: number; initialScrollTop: number; currentY: number; } | null>(null);
+  
+  const sequenceListRef = useRef<HTMLDivElement>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const touchStartInfoRef = useRef<{ part: SequencePart; element: HTMLElement; touch: React.Touch; } | null>(null);
+
+  const handleDragStart = (id: string) => setDraggedId(id);
+  const handleDragEnd = () => {
+    setDraggedId(null);
+    setDropTarget({ index: null, position: null });
+    setTouchDragState(null);
+  };
+
+  const handleDrop = useCallback(() => {
+    if (!draggedId || dropTarget.index === null) return;
+    setSequence(currentSequence => {
+        const draggedIndex = currentSequence.findIndex(p => p.sequenceId === draggedId);
+        if (draggedIndex === -1) return currentSequence;
+        const newSequence = [...currentSequence];
+        const [draggedItem] = newSequence.splice(draggedIndex, 1);
+        let targetIndex = dropTarget.index;
+        if (draggedIndex < targetIndex) targetIndex--;
+        const insertAtIndex = dropTarget.position === 'top' ? targetIndex : targetIndex + 1;
+        newSequence.splice(insertAtIndex, 0, draggedItem);
+        return newSequence;
+    });
+  }, [draggedId, dropTarget, setSequence]);
+
+  const handleItemDragOver = (index: number, e: React.DragEvent) => {
+    e.preventDefault();
+    if (sequence[index]?.sequenceId === draggedId) return;
+    const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+    const newPosition = e.clientY < rect.top + rect.height / 2 ? 'top' : 'bottom';
+    if (dropTarget.index !== index || dropTarget.position !== newPosition) {
+      setDropTarget({ index, position: newPosition });
+    }
+  };
+
+  const handleTouchDragMove = useCallback((e: TouchEvent) => {
+    if (!draggedId) return;
+    if (e.cancelable) e.preventDefault();
+    const touchY = e.touches[0].clientY;
+    setTouchDragState(prev => prev ? { ...prev, currentY: touchY } : null);
+
+    const sequenceItems = Array.from(sequenceListRef.current?.children || []).filter(c => c.classList.contains('sequence-item'));
+    let newDropTarget: { index: number | null; position: 'top' | 'bottom' | null } = { index: null, position: null };
+
+    const targetItem = sequenceItems.find(item => {
+      if (sequence[sequenceItems.indexOf(item)]?.sequenceId === draggedId) return false;
+      const rect = item.getBoundingClientRect();
+      return touchY >= rect.top && touchY <= rect.bottom;
+    });
+
+    if (targetItem) {
+      const rect = targetItem.getBoundingClientRect();
+      const targetIndex = sequenceItems.indexOf(targetItem);
+      newDropTarget = { index: targetIndex, position: touchY < rect.top + rect.height / 2 ? 'top' : 'bottom' };
+    } // More logic for top/bottom of list can be added here if needed
+
+    if (dropTarget.index !== newDropTarget.index || dropTarget.position !== newDropTarget.position) {
+      setDropTarget(newDropTarget);
+    }
+  }, [draggedId, sequence, dropTarget]);
+
+  const handleTouchDragEnd = useCallback(() => {
+    window.removeEventListener('touchmove', handleTouchDragMove);
+    window.removeEventListener('touchend', handleTouchDragEnd);
+    window.removeEventListener('touchcancel', handleTouchDragEnd);
+    if (draggedId && dropTarget.index !== null) handleDrop();
+    handleDragEnd();
+  }, [draggedId, dropTarget, handleDrop, handleTouchDragMove]);
+
+  const initTouchDrag = useCallback(() => {
+    if (!touchStartInfoRef.current) return;
+    const { part, element, touch } = touchStartInfoRef.current;
+    if (!sequenceListRef.current) return;
+    if (navigator.vibrate) navigator.vibrate(50);
+    handleDragStart(part.sequenceId);
+    setTouchDragState({
+        id: part.sequenceId, startY: touch.clientY, elementInitialTop: element.offsetTop,
+        initialScrollTop: sequenceListRef.current.scrollTop, currentY: touch.clientY,
+    });
+    window.addEventListener('touchmove', handleTouchDragMove, { passive: false });
+    window.addEventListener('touchend', handleTouchDragEnd);
+    window.addEventListener('touchcancel', handleTouchDragEnd);
+  }, [handleTouchDragMove, handleTouchDragEnd]);
+
+  const handleMobileDragStart = (part: SequencePart, e: React.TouchEvent) => {
+    const element = (e.currentTarget as HTMLElement).closest('.sequence-item');
+    if (!(element instanceof HTMLElement)) return;
+    touchStartInfoRef.current = { part, element, touch: e.touches[0] };
+    if (longPressTimerRef.current) {
+        window.clearTimeout(longPressTimerRef.current);
+    }
+    longPressTimerRef.current = window.setTimeout(initTouchDrag, LONG_PRESS_DURATION);
+  };
+  
+  const cancelLongPress = () => {
+    if (longPressTimerRef.current) {
+      window.clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = undefined;
+    }
+  };
+
+  return {
+    refs: { sequenceListRef },
+    state: { draggedId, dropTarget, touchDragState },
+    actions: { handleDragStart, handleDragEnd, handleDrop, handleItemDragOver, handleMobileDragStart, cancelLongPress }
+  };
+};
+
+
+const App = () => {
+  const [character, setCharacter] = useState(AVAILABLE_CHARACTERS[0] || '');
+  
+  const { isMobileView, isTouchDevice } = useDeviceState();
+  const { comboParts, sampleCombos, isLoading } = useCharacterData(character);
+  const { tags, handleTagClick, resetFilters, availableTags, filteredParts } = useFilters(comboParts);
+  const { sequence, setSequence, addPartToSequence, removeFromSequence, clearSequence, loadSampleCombo, comboStats } = useSequence();
+  const { refs: playerRefs, state: playerState, actions: playerActions } = useVideoPlayer(sequence);
+  const { refs: dndRefs, state: dndState, actions: dndActions } = useDragAndDrop(sequence, setSequence, isTouchDevice);
+  
+  const [showAllParts, setShowAllParts] = useState(false);
+  const [isPartPickerModalOpen, setIsPartPickerModalOpen] = useState(false);
+  const [isCharSelectExpanded, setIsCharSelectExpanded] = useState(true);
+  const [isLibraryExpanded, setIsLibraryExpanded] = useState(true);
+  const [isHowToModalOpen, setIsHowToModalOpen] = useState(false);
+  const [activeLibraryTab, setActiveLibraryTab] = useState<'parts' | 'samples'>('parts');
+
+  useEffect(() => {
+    if (!isMobileView) {
+        setIsCharSelectExpanded(true);
+        setIsLibraryExpanded(true);
+    }
+  }, [isMobileView]);
+
+  useEffect(() => {
+    setShowAllParts(false);
+  }, [tags, character]);
+
+  const handleCharacterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setCharacter(e.target.value);
+    resetFilters();
+    clearSequence();
+    playerActions.hardStopSequence();
+  };
+  
+  const handleAddPart = (part: ComboPart) => {
+    playerActions.hardStopSequence();
+    addPartToSequence(part);
+  };
+
+  const handleRemovePart = (id: string) => {
+    playerActions.hardStopSequence();
+    removeFromSequence(id);
+  };
+  
+  const handleClear = () => {
+    playerActions.hardStopSequence();
+    clearSequence();
+  };
+  
+  const handleLoadSample = (sample: SampleCombo) => {
+    playerActions.hardStopSequence();
+    loadSampleCombo(sample, comboParts);
+  };
+
+  const handleShowMoreClick = () => {
+    if (isMobileView) setIsPartPickerModalOpen(true);
+    else setShowAllParts(prev => !prev);
+  };
+  
+  const displayedParts = useMemo(() => {
+    return showAllParts ? filteredParts : filteredParts.slice(0, INITIAL_PARTS_LIMIT);
+  }, [filteredParts, showAllParts]);
+  
   return (
-    <div className="app-container" onTouchEnd={cancelLongPress} onTouchMove={cancelLongPress}>
-      {isHowToModalOpen && isYtApiReady && <HowToModal onClose={() => setIsHowToModalOpen(false)} />}
+    <div className="app-container" onTouchEnd={dndActions.cancelLongPress} onTouchMove={dndActions.cancelLongPress}>
+      {isHowToModalOpen && playerState.isYtApiReady && <HowToModal onClose={() => setIsHowToModalOpen(false)} />}
        <PartPickerModal
         isOpen={isPartPickerModalOpen}
         onClose={() => setIsPartPickerModalOpen(false)}
         parts={filteredParts}
-        onPartAdd={handleAddPartToSequence}
+        onPartAdd={handleAddPart}
         sequence={sequence}
       />
       <header>
@@ -882,23 +785,16 @@ const App = () => {
       <main>
         <div className="sidebar">
           <section className={`character-select collapsible-section ${isCharSelectExpanded ? 'expanded' : ''}`}>
-            <h2
-              onClick={isMobileView ? toggleCharSelectExpansion : undefined}
-              role={isMobileView ? "button" : undefined}
-              aria-expanded={isCharSelectExpanded}
-              aria-controls="character-select-content"
-              tabIndex={isMobileView ? 0 : undefined}
-              onKeyDown={isMobileView ? (e) => { if (e.key === 'Enter' || e.key === ' ') toggleCharSelectExpansion(); } : undefined}
-            >
+            <h2 onClick={isMobileView ? () => setIsCharSelectExpanded(p => !p) : undefined} role={isMobileView ? "button" : undefined}>
               <span>Character Select</span>
               <span className={`expand-icon ${isCharSelectExpanded ? 'expanded' : ''}`} aria-hidden="true">▼</span>
             </h2>
-            <div id="character-select-content" className="collapsible-content">
+            <div className="collapsible-content">
               <div className="filters">
                 <div className="filter-group">
                   <label htmlFor="character-filter">Character</label>
-                  <select id="character-filter" name="character" value={filters.character} onChange={handleFilterChange}>
-                    {CHARACTERS.map(c => <option key={c} value={c}>{c}</option>)}
+                  <select id="character-filter" name="character" value={character} onChange={handleCharacterChange}>
+                    {AVAILABLE_CHARACTERS.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
               </div>
@@ -906,77 +802,46 @@ const App = () => {
           </section>
 
           <aside className={`library collapsible-section ${isLibraryExpanded ? 'expanded' : ''}`}>
-            <h2
-              onClick={isMobileView ? toggleLibraryExpansion : undefined}
-              role={isMobileView ? "button" : undefined}
-              aria-expanded={isLibraryExpanded}
-              aria-controls="parts-list-container"
-              tabIndex={isMobileView ? 0 : undefined}
-              onKeyDown={isMobileView ? (e) => { if (e.key === 'Enter' || e.key === ' ') toggleLibraryExpansion(); } : undefined}
-            >
+            <h2 onClick={isMobileView ? () => setIsLibraryExpanded(p => !p) : undefined} role={isMobileView ? "button" : undefined}>
               <span>Parts Library</span>
               <span className={`expand-icon ${isLibraryExpanded ? 'expanded' : ''}`} aria-hidden="true">▼</span>
             </h2>
             <div className="collapsible-content">
               <div className="library-tabs">
-                <button
-                  className={`library-tab-button ${activeLibraryTab === 'parts' ? 'active' : ''}`}
-                  onClick={() => setActiveLibraryTab('parts')}
-                >
-                  パーツ検索
-                </button>
-                <button
-                  className={`library-tab-button ${activeLibraryTab === 'samples' ? 'active' : ''}`}
-                  onClick={() => setActiveLibraryTab('samples')}
-                  disabled={sampleCombos.length === 0}
-                >
-                  サンプルコンボ
-                </button>
+                <button className={`library-tab-button ${activeLibraryTab === 'parts' ? 'active' : ''}`} onClick={() => setActiveLibraryTab('parts')}>パーツ検索</button>
+                <button className={`library-tab-button ${activeLibraryTab === 'samples' ? 'active' : ''}`} onClick={() => setActiveLibraryTab('samples')} disabled={sampleCombos.length === 0}>サンプルコンボ</button>
               </div>
 
               {activeLibraryTab === 'parts' && (
                 <>
                   <div className="tag-filter-container">
-                    {Object.entries(TAG_CATEGORIES).map(([categoryKey, categoryName]) => {
-                      const key = categoryKey as TagCategoryKey;
-                      const tagsForCategory = availableTags[key];
+                    {Object.entries(TAG_CATEGORIES).map(([key, name]) => {
+                      const categoryKey = key as TagCategoryKey;
+                      const tagsForCategory = availableTags[categoryKey];
                       if (!tagsForCategory || tagsForCategory.length === 0) return null;
-
                       return (
                         <div key={key} className="tag-category">
-                          <h4>{categoryName}</h4>
+                          <h4>{name}</h4>
                           <div className="tag-buttons">
                             {tagsForCategory.map(tag => (
-                              <button
-                                key={tag}
-                                className={`tag-filter-button ${filters.tags[key].has(tag) ? 'active' : ''}`}
-                                onClick={() => handleTagClick(key, tag)}
-                              >
-                                {tag}
-                              </button>
+                              <button key={tag} className={`tag-filter-button ${tags[categoryKey].has(tag) ? 'active' : ''}`} onClick={() => handleTagClick(categoryKey, tag)}>{tag}</button>
                             ))}
                           </div>
                         </div>
                       )
                     })}
                   </div>
-                  <div className="parts-list" id="parts-list-container">
-                    {isLoading ? (
-                      <div className="loading-spinner" aria-label="Loading parts..."></div>
-                    ) : displayedParts.length > 0 ? (
-                      displayedParts.map(part => <PartCard key={part.id} part={part} onPartClick={handleAddPartToSequence} />)
-                    ) : (
-                      <p className="no-parts-found">No matching parts found.</p>
-                    )}
+                  <div className="parts-list">
+                    {isLoading ? <div className="loading-spinner"></div> : 
+                     displayedParts.length > 0 ? displayedParts.map(part => <PartCard key={part.id} part={part} onPartClick={handleAddPart} />) : 
+                     <p className="no-parts-found">No matching parts found.</p>}
                   </div>
                   {!isLoading && filteredParts.length > INITIAL_PARTS_LIMIT && (
-                      <div className="show-more-container">
-                        <button onClick={handleShowMoreClick} className="show-more-button">
-                          {isMobileView || !showAllParts
-                            ? `もっと見る (${filteredParts.length - (isMobileView ? 0 : INITIAL_PARTS_LIMIT)}件)`
-                            : '表示を減らす'}
-                        </button>
-                      </div>
+                    <div className="show-more-container">
+                      <button onClick={handleShowMoreClick} className="show-more-button">
+                        {isMobileView || !showAllParts ? `もっと見る (${filteredParts.length - (isMobileView ? 0 : INITIAL_PARTS_LIMIT)}件)` : '表示を減らす'}
+                      </button>
+                    </div>
                   )}
                 </>
               )}
@@ -984,11 +849,7 @@ const App = () => {
               {activeLibraryTab === 'samples' && (
                 <div className="sample-combos-list-container">
                   <div className="sample-combos-list">
-                    {sampleCombos.map((sample, index) => (
-                      <button key={index} className="sample-combo-button" onClick={() => handleLoadSampleCombo(sample)}>
-                        {sample.name}
-                      </button>
-                    ))}
+                    {sampleCombos.map((sample, index) => <button key={index} className="sample-combo-button" onClick={() => handleLoadSample(sample)}>{sample.name}</button>)}
                   </div>
                 </div>
               )}
@@ -1000,117 +861,67 @@ const App = () => {
           <h2>Sequence Builder</h2>
           <div className="builder-content">
             <div className="player-area">
-              {!currentVideoUrl && currentPlayingIndex === null ? (
+              {!playerState.currentVideoUrl && playerState.currentPlayingIndex === null ? (
                 <div className="player-placeholder">Click a part from the library to add it to the sequence.</div>
               ) : (
                 <>
-                  <div
-                    id="yt-player-container"
-                    ref={ytPlayerContainerRef}
-                    style={{ display: isCurrentVideoYouTube ? 'block' : 'none', width: '100%', height: '100%' }}
-                  />
-                  <video
-                    ref={videoRef}
-                    style={{ display: !isCurrentVideoYouTube ? 'block' : 'none', width: '100%', height: '100%', objectFit: 'contain' }}
-                    controls
-                    playsInline
-                    aria-label="Combo sequence player"
-                  />
+                  <div id="yt-player-container" ref={playerRefs.ytPlayerContainerRef} style={{ display: playerState.isCurrentVideoYouTube ? 'block' : 'none', width: '100%', height: '100%' }} />
+                  <video ref={playerRefs.videoRef} style={{ display: !playerState.isCurrentVideoYouTube ? 'block' : 'none', width: '100%', height: '100%', objectFit: 'contain' }} controls playsInline />
                 </>
               )}
             </div>
             <div className="sequence-area">
               <div className="sequence-controls">
                 <div>
-                  <button
-                    onClick={playSequence}
-                    disabled={sequence.length === 0 || (currentPlayingIndex !== null && !isSequencePaused)}
-                  >
-                    {(currentPlayingIndex !== null && isSequencePaused) ? 'Resume' : 'Play'}
+                  <button onClick={playerActions.playSequence} disabled={sequence.length === 0 || (playerState.currentPlayingIndex !== null && !playerState.isSequencePaused)}>
+                    {(playerState.currentPlayingIndex !== null && playerState.isSequencePaused) ? 'Resume' : 'Play'}
                   </button>
-                  <button onClick={handleRewind} disabled={currentPlayingIndex === null}>Rewind 5s</button>
-                  {/* FIX: The "Stop" button should call `hardStopSequence` to actually stop playback, not just pause it.
-                      The disabled logic is also corrected to allow stopping while paused. */}
-                  <button onClick={handlePause} disabled={currentPlayingIndex === null || isSequencePaused}>Pause</button>
-                  <button onClick={hardStopSequence} disabled={currentPlayingIndex === null}>Stop</button>
+                  <button onClick={playerActions.rewindSequence} disabled={playerState.currentPlayingIndex === null}>Rewind 5s</button>
+                  <button onClick={playerActions.pauseSequence} disabled={playerState.currentPlayingIndex === null || playerState.isSequencePaused}>Pause</button>
+                  <button onClick={playerActions.hardStopSequence} disabled={playerState.currentPlayingIndex === null}>Stop</button>
                 </div>
-                <button 
-                  className="clear-button"
-                  onClick={handleClearSequence} 
-                  disabled={sequence.length === 0}
-                  aria-label="Clear sequence"
-                >
-                  Clear
-                </button>
+                <button className="clear-button" onClick={handleClear} disabled={sequence.length === 0}>Clear</button>
               </div>
 
               {sequence.length > 0 && (
                 <div className="combo-stats">
-                  <span className="info-item damage" aria-label={`Total Damage: ${comboStats.totalDamage}`}>
-                    💥 Total Damage: {comboStats.totalDamage}
-                  </span>
+                  <span className="info-item damage">💥 Total Damage: {comboStats.totalDamage}</span>
                   {comboStats.finalFrameAdvantage !== undefined && (
-                    <span
-                      className={`info-item frame-advantage ${comboStats.finalFrameAdvantage >= 0 ? 'positive' : 'negative'}`}
-                      aria-label={`Final Frame Advantage: ${comboStats.finalFrameAdvantage}`}
-                    >
+                    <span className={`info-item frame-advantage ${comboStats.finalFrameAdvantage >= 0 ? 'positive' : 'negative'}`}>
                       ⏰ Final Frames: {comboStats.finalFrameAdvantage > 0 ? `+${comboStats.finalFrameAdvantage}` : comboStats.finalFrameAdvantage}
                     </span>
                   )}
                 </div>
               )}
 
-              <div
-                ref={sequenceListRef}
-                className="sequence-list-container"
-                aria-label="Current combo sequence"
-                onDragOver={(e) => { if (!isTouchDevice) e.preventDefault(); }}
-                onDrop={!isTouchDevice ? () => { handleDrop(); handleDragEnd(); } : undefined}
-              >
+              <div ref={dndRefs.sequenceListRef} className="sequence-list-container" onDragOver={(e) => { if (!isTouchDevice) e.preventDefault(); }} onDrop={!isTouchDevice ? () => { dndActions.handleDrop(); dndActions.handleDragEnd(); } : undefined}>
                 {sequence.map((part, index) => {
-                  const isBeingTouchDragged = touchDragState?.id === part.sequenceId;
+                  const isBeingTouchDragged = dndState.touchDragState?.id === part.sequenceId;
                   let itemStyle: React.CSSProperties = {};
                   if (isBeingTouchDragged) {
-                    const list = sequenceListRef.current;
-                    const currentScrollTop = list ? list.scrollTop : touchDragState.initialScrollTop;
-                    const scrollDelta = currentScrollTop - touchDragState.initialScrollTop;
-                    const touchDelta = touchDragState.currentY - touchDragState.startY;
-                    const transformY = touchDelta - scrollDelta;
-                    
-                    itemStyle = {
-                      transform: `translateY(${transformY}px) scale(1.02)`,
-                    };
+                    const list = dndRefs.sequenceListRef.current;
+                    const scrollDelta = list ? (list.scrollTop - dndState.touchDragState!.initialScrollTop) : 0;
+                    const touchDelta = dndState.touchDragState!.currentY - dndState.touchDragState!.startY;
+                    itemStyle = { transform: `translateY(${touchDelta - scrollDelta}px) scale(1.02)` };
                   }
 
                   return (
                     <React.Fragment key={part.sequenceId}>
-                      {!isTouchDevice && dropTarget.index === index && dropTarget.position === 'top' && (
-                        <div className="drop-indicator" />
-                      )}
-                      {isTouchDevice && dropTarget.index === index && dropTarget.position === 'top' && draggedId !== part.sequenceId && (
-                        <div className="drop-indicator" />
-                      )}
-
+                      {dndState.dropTarget.index === index && dndState.dropTarget.position === 'top' && dndState.draggedId !== part.sequenceId && <div className="drop-indicator" />}
                       <SequenceItem
                         part={part}
-                        onRemove={handleRemoveFromSequence}
-                        isPlaying={part.sequenceId === sequence[currentPlayingIndex!]?.sequenceId}
-                        isDragging={draggedId === part.sequenceId && !isTouchDevice}
+                        onRemove={handleRemovePart}
+                        isPlaying={part.sequenceId === sequence[playerState.currentPlayingIndex!]?.sequenceId}
+                        isDragging={dndState.draggedId === part.sequenceId && !isTouchDevice}
                         isTouchDragging={isBeingTouchDragged}
-                        onDragStart={(e) => { e.dataTransfer.setData('text/plain', part.sequenceId); handleDragStart(part.sequenceId); }}
-                        onDragEnd={handleDragEnd}
-                        onDragOver={(e) => handleItemDragOver(index, e)}
+                        onDragStart={(e) => { e.dataTransfer.setData('text/plain', part.sequenceId); dndActions.handleDragStart(part.sequenceId); }}
+                        onDragEnd={dndActions.handleDragEnd}
+                        onDragOver={(e) => dndActions.handleItemDragOver(index, e)}
                         isTouchDevice={isTouchDevice}
-                        onMobileDragStart={(e) => handleMobileDragStart(part, e)}
+                        onMobileDragStart={(e) => dndActions.handleMobileDragStart(part, e)}
                         style={itemStyle}
                       />
-
-                      {!isTouchDevice && dropTarget.index === index && dropTarget.position === 'bottom' && (
-                        <div className="drop-indicator" />
-                      )}
-                      {isTouchDevice && dropTarget.index === index && dropTarget.position === 'bottom' && draggedId !== part.sequenceId && (
-                        <div className="drop-indicator" />
-                      )}
+                      {dndState.dropTarget.index === index && dndState.dropTarget.position === 'bottom' && dndState.draggedId !== part.sequenceId && <div className="drop-indicator" />}
                     </React.Fragment>
                   );
                 })}
