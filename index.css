@@ -500,14 +500,15 @@ select#character-filter {
   background-color: #ffd65a;
 }
 
-.clear-button {
+.clear-button, .cancel-move-button {
   background-color: #4a4a4a;
   color: var(--text-secondary-color);
   font-size: 1rem;
   padding: 0.6rem 1.2rem;
 }
 
-.clear-button:hover:not(:disabled) {
+.clear-button:hover:not(:disabled),
+.cancel-move-button:hover:not(:disabled) {
   background-color: var(--error-color);
   color: var(--text-color);
 }
@@ -540,7 +541,6 @@ select#character-filter {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  position: relative; /* For correct positioning of absolute/transformed children */
 }
 
 .sequence-item {
@@ -554,44 +554,11 @@ select#character-filter {
   transition: opacity 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-.sequence-item[draggable="true"] {
-  cursor: grab;
-}
-
-.sequence-item[draggable="true"]:active {
-  cursor: grabbing;
-}
-
-.sequence-item.dragging {
-  opacity: 0.5;
-  background-color: #444;
-}
-
-.sequence-item.touch-dragging {
-  position: fixed;
-  z-index: 1000;
-  opacity: 0.95;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-  pointer-events: none;
+.sequence-item.moving {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 10px var(--primary-color);
   background-color: #4f4f4f;
-  transform-origin: center;
-  transition: none; /* Disable transitions while dragging */
 }
-
-.sequence-item.ghost {
-  opacity: 0.4;
-  background-color: var(--background-color);
-  border-color: #555;
-}
-
-/* Ensure dragging style overrides ghost for the actively dragged element */
-.sequence-item.ghost.dragging {
-  opacity: 0.5;
-}
-.sequence-item.ghost.touch-dragging {
-  opacity: 0.95;
-}
-
 
 .sequence-item span {
   flex-grow: 1;
@@ -624,27 +591,29 @@ select#character-filter {
   display: block;
   background: none;
   border: none;
-  cursor: grab;
+  cursor: pointer;
   font-size: 1.5rem;
   color: var(--text-secondary-color);
   padding: 0 0.5rem;
-  /* --- iOS Drag & Drop Fixes --- */
-  touch-action: none; /* Prevent browser default touch actions like scroll */
-  user-select: none; /* Prevent text selection on long press */
-  -webkit-user-select: none; /* Safari */
-  -webkit-touch-callout: none; /* iOS Safari */
+  touch-action: manipulation; /* Prevent zoom on double tap */
 }
 
-.drag-handle:active {
-  cursor: grabbing;
+.move-target-indicator {
+  background-color: transparent;
+  border: 2px dashed var(--primary-color);
+  border-radius: 4px;
+  padding: 0.75rem;
+  width: 100%;
+  color: var(--primary-color);
+  cursor: pointer;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
 }
 
-.drop-indicator {
-  height: 4px;
-  background-color: var(--primary-color);
-  border-radius: 2px;
-  box-shadow: 0 0 8px var(--primary-color);
-  margin: 2px 0;
+.move-target-indicator:hover {
+  background-color: rgba(255, 193, 7, 0.1);
 }
 
 .notation-guide {
