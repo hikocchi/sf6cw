@@ -479,33 +479,70 @@ select#character-filter {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
-.sequence-controls button {
-  background-color: var(--primary-color);
-  color: #000;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  font-family: var(--font-primary);
-  font-size: 1.2rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.sequence-controls > div {
+.player-controls-main {
   display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap; /* Allow buttons to wrap on small screens */
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
-.sequence-controls button:disabled {
-  background-color: #555;
+.player-control-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border: none;
+  background-color: #4f4f4f;
+  color: var(--text-color);
+  user-select: none;
+}
+
+.player-control-button .control-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.player-control-button:hover:not(:disabled) {
+  background-color: #666;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+
+.player-control-button:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.player-control-button:disabled {
+  background-color: #333;
+  color: #777;
   cursor: not-allowed;
 }
 
-.sequence-controls button:hover:not(:disabled) {
+.play-pause-button {
+  background-color: var(--primary-color);
+  color: #000;
+  padding: 0.8rem 1.5rem;
+  font-size: 1.2rem;
+  font-family: var(--font-primary);
+  min-width: 120px;
+}
+
+.play-pause-button .control-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.play-pause-button:hover:not(:disabled) {
   background-color: #ffd65a;
 }
 
@@ -514,11 +551,21 @@ select#character-filter {
   color: var(--text-secondary-color);
   font-size: 1rem;
   padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .clear-button:hover:not(:disabled) {
   background-color: var(--error-color);
   color: var(--text-color);
+}
+
+.clear-button:disabled {
+  background-color: #333;
+  color: #777;
+  cursor: not-allowed;
 }
 
 .combo-stats {
@@ -931,6 +978,21 @@ footer {
     gap: 0.5rem;
   }
 }
+
+@media (max-width: 480px) {
+  .player-control-button span {
+     display: none; /* Hide text on very small screens */
+  }
+  .player-control-button {
+     padding: 0.75rem;
+     border-radius: 50%; /* Make buttons circular */
+  }
+   .play-pause-button {
+     padding: 1rem;
+     min-width: 0;
+  }
+}
+
 
 /* --- Desktop-specific styles (non-collapsible) --- */
 @media (min-width: 901px) {

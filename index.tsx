@@ -56,6 +56,32 @@ interface SampleCombo {
 }
 
 
+// --- アイコンコンポーネント ---
+const PlayIcon = () => (
+  <svg className="control-icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
+    <path d="M0 0h24v24H0V0z" fill="none"/><path d="M10 8.64L15.27 12 10 15.36V8.64M8 5v14l11-7L8 5z"/>
+  </svg>
+);
+
+const PauseIcon = () => (
+  <svg className="control-icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
+    <path d="M0 0h24v24H0V0z" fill="none"/><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+  </svg>
+);
+
+const RewindIcon = () => (
+    <svg className="control-icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
+        <path d="M0 0h24v24H0z" fill="none"/><path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z"/>
+    </svg>
+);
+
+const StopIcon = () => (
+  <svg className="control-icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
+    <path d="M0 0h24v24H0V0z" fill="none"/><path d="M6 6h12v12H6V6z"/>
+  </svg>
+);
+
+
 // --- コンポーネント ---
 const HowToModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const playerRef = useRef<any>(null);
@@ -754,6 +780,14 @@ const App = () => {
     else setShowAllParts(prev => !prev);
   };
   
+  const handlePlayPauseToggle = () => {
+    if (playerState.currentPlayingIndex !== null && !playerState.isSequencePaused) {
+      playerActions.pauseSequence();
+    } else {
+      playerActions.playSequence();
+    }
+  };
+
   const displayedParts = useMemo(() => {
     return showAllParts ? filteredParts : filteredParts.slice(0, INITIAL_PARTS_LIMIT);
   }, [filteredParts, showAllParts]);
@@ -864,13 +898,42 @@ const App = () => {
             </div>
             <div className="sequence-area">
               <div className="sequence-controls">
-                <div>
-                  <button onClick={playerActions.playSequence} disabled={sequence.length === 0 || (playerState.currentPlayingIndex !== null && !playerState.isSequencePaused)}>
-                    {(playerState.currentPlayingIndex !== null && playerState.isSequencePaused) ? 'Resume' : 'Play'}
+                <div className="player-controls-main">
+                  <button
+                    className="player-control-button"
+                    onClick={playerActions.rewindSequence}
+                    disabled={playerState.currentPlayingIndex === null}
+                    aria-label="Rewind 5 seconds"
+                  >
+                    <RewindIcon />
+                    <span>Rewind 5s</span>
                   </button>
-                  <button onClick={playerActions.rewindSequence} disabled={playerState.currentPlayingIndex === null}>Rewind 5s</button>
-                  <button onClick={playerActions.pauseSequence} disabled={playerState.currentPlayingIndex === null || playerState.isSequencePaused}>Pause</button>
-                  <button onClick={playerActions.hardStopSequence} disabled={playerState.currentPlayingIndex === null}>Stop</button>
+                  <button
+                    className="player-control-button play-pause-button"
+                    onClick={handlePlayPauseToggle}
+                    disabled={sequence.length === 0}
+                    aria-label={
+                      playerState.currentPlayingIndex !== null && !playerState.isSequencePaused ? 'Pause' 
+                      : (playerState.isSequencePaused ? 'Resume' : 'Play')
+                    }
+                  >
+                    {playerState.currentPlayingIndex !== null && !playerState.isSequencePaused ? <PauseIcon /> : <PlayIcon />}
+                    <span>
+                      {
+                        playerState.currentPlayingIndex !== null && !playerState.isSequencePaused ? 'Pause' 
+                        : (playerState.isSequencePaused ? 'Resume' : 'Play')
+                      }
+                    </span>
+                  </button>
+                  <button
+                    className="player-control-button"
+                    onClick={playerActions.hardStopSequence}
+                    disabled={playerState.currentPlayingIndex === null}
+                    aria-label="Stop"
+                  >
+                    <StopIcon />
+                    <span>Stop</span>
+                  </button>
                 </div>
                 <button className="clear-button" onClick={handleClear} disabled={sequence.length === 0}>Clear</button>
               </div>
@@ -911,7 +974,7 @@ const App = () => {
                       <SequenceItem
                         part={part}
                         onRemove={handleRemovePart}
-                        isPlaying={part.sequenceId === sequence[playerState.currentPlayingIndex!]?.sequenceId}
+                        isPlaying={part.sequenceId === sequence[playerState.currentPlayingIndex]?.sequenceId}
                         isDragging={reorder.draggingPartId === part.sequenceId}
                         draggableProps={draggableProps}
                       />
