@@ -1,7 +1,7 @@
 import React from 'react';
 import type { ComboPart } from '../types';
 
-export const PartCard: React.FC<{ part: ComboPart; onPartClick: (part: ComboPart) => void; }> = ({ part, onPartClick }) => {
+export const PartCard: React.FC<{ part: ComboPart; onPartClick: (part: ComboPart, event: React.MouseEvent<HTMLDivElement>) => void; }> = ({ part, onPartClick }) => {
   const partTags = [
     part.tagType,
     part.startCondition,
@@ -13,11 +13,11 @@ export const PartCard: React.FC<{ part: ComboPart; onPartClick: (part: ComboPart
   return (
     <div
       className="part-card"
-      onClick={() => onPartClick(part)}
+      onClick={(e) => onPartClick(part, e)}
       aria-label={`Click to add ${part.name}`}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onPartClick(part); }}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onPartClick(part, e as any); }}
     >
       <h3>{part.name}</h3>
       <div className="tags">

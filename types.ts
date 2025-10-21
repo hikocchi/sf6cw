@@ -26,6 +26,13 @@ export interface SampleCombo {
   parts: string[];
 }
 
+export interface FavoriteCombo {
+  id: string;
+  name: string;
+  character: string;
+  partIds: string[];
+}
+
 export type TagCategoryKey = keyof typeof import('./constants').TAG_CATEGORIES;
 
 // FIX: Add missing type definitions for AI features.

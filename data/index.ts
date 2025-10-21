@@ -5,6 +5,19 @@ export const AVAILABLE_CHARACTERS = [
   'リュウ','ラシード'
 ];
 
+// URL短縮用のキャラクターIDマッピング
+export const CHARACTER_ID_MAP: { [key: string]: string } = {
+  'リュウ': 'ryu',
+  'ラシード': 'rashid',
+  // 他のキャラクターもここに追加
+};
+
+// 短縮IDからキャラクター名を取得するための逆引きマップ
+export const CHARACTER_NAME_MAP: { [key: string]: string } = Object.fromEntries(
+  Object.entries(CHARACTER_ID_MAP).map(([name, id]) => [id, name])
+);
+
+
 /**
  * 要求されたキャラクターのコンボデータを動的にロードします。
  * @param character キャラクター名
