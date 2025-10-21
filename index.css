@@ -23,6 +23,15 @@ body {
   overscroll-behavior: none;
 }
 
+body.no-scroll {
+  overflow: hidden;
+}
+
+body.user-select-none {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 #root {
   display: flex;
   flex-direction: column;
@@ -500,15 +509,14 @@ select#character-filter {
   background-color: #ffd65a;
 }
 
-.clear-button, .cancel-move-button {
+.clear-button {
   background-color: #4a4a4a;
   color: var(--text-secondary-color);
   font-size: 1rem;
   padding: 0.6rem 1.2rem;
 }
 
-.clear-button:hover:not(:disabled),
-.cancel-move-button:hover:not(:disabled) {
+.clear-button:hover:not(:disabled) {
   background-color: var(--error-color);
   color: var(--text-color);
 }
@@ -553,17 +561,13 @@ select#character-filter {
   transition: opacity 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
-.sequence-item.moving {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 10px var(--primary-color);
-  background-color: #4f4f4f;
-}
-
-/* Style for dragged item on Desktop */
 .sequence-item.dragging {
   opacity: 0.5;
   border-style: dashed;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+  background-color: #4f4f4f;
 }
+
 
 .sequence-item span {
   flex-grow: 1;
@@ -596,41 +600,15 @@ select#character-filter {
   display: block;
   background: none;
   border: none;
-  cursor: pointer;
+  cursor: grab;
   font-size: 1.5rem;
   color: var(--text-secondary-color);
   padding: 0 0.5rem;
-  touch-action: manipulation; /* Prevent zoom on double tap */
+  touch-action: none; /* Prevent browser touch gestures like scroll/zoom */
 }
 
-/* Mobile tap-to-move indicator */
-.move-target-indicator {
-  background-color: transparent;
-  border: 2px dashed var(--primary-color);
-  border-radius: 4px;
-  padding: 0.75rem;
-  width: 100%;
-  color: var(--primary-color);
-  cursor: pointer;
-  text-align: center;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-  margin: 0.25rem 0;
-}
-
-.move-target-indicator:hover {
-  background-color: rgba(255, 193, 7, 0.1);
-}
-
-/* Mobile reorder target styling */
-.sequence-list-container.is-reordering .sequence-item.reorder-target {
-  cursor: pointer;
-}
-
-.sequence-list-container.is-reordering .sequence-item.reorder-target:hover {
-  background-color: rgba(255, 193, 7, 0.1);
-  border-left-color: var(--primary-color);
+.drag-handle:active {
+  cursor: grabbing;
 }
 
 
@@ -640,11 +618,12 @@ select#character-filter {
   margin: 2px 0;
   border-radius: 2px;
   background-color: transparent;
-  transition: height 0.2s ease, background-color 0.2s ease, border 0.2s ease;
+  transition: height 0.2s ease, background-color 0.2s ease, border 0.2s ease, margin 0.2s ease;
 }
 
 .drop-indicator.active {
   height: 30px;
+  margin: 4px 0;
   background-color: rgba(255, 193, 7, 0.2);
   border: 2px dashed var(--primary-color);
 }
