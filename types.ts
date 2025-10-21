@@ -1,0 +1,47 @@
+// --- 型定義 ---
+export interface ComboPart {
+  id: string;
+  character: string;
+  name: string;
+  comboparts: string;
+  videoUrl: string;
+  order: number;
+  damage?: number;
+  endFrameAdvantage?: number;
+  startTime?: number;
+  endTime?: number;
+  tagType?: string;
+  startCondition?: string;
+  tagCondition?: string[];
+  tagDriveGauge?: string;
+  tagSaGauge?: string;
+}
+
+export interface SequencePart extends ComboPart {
+  sequenceId: string;
+}
+
+export interface SampleCombo {
+  name: string;
+  parts: string[];
+}
+
+export type TagCategoryKey = keyof typeof import('./constants').TAG_CATEGORIES;
+
+// FIX: Add missing type definitions for AI features.
+export interface AiComboRequest {
+  character: string;
+  parts: ComboPart[];
+  conditions: {
+    purpose: string;
+    position: string;
+    starter: string;
+    driveGauge: number;
+    saGauge: string;
+  };
+}
+
+export interface AiGeneratedCombo {
+  partIds: string[];
+  explanation: string;
+}

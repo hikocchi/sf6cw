@@ -1,4 +1,4 @@
-import type { ComboPart } from '../index.tsx';
+import type { ComboPart } from '../types';
 
 export const ehondaComboParts: ComboPart[] = [
   {

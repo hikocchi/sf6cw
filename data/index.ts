@@ -1,4 +1,4 @@
-import type { ComboPart } from '../index.tsx';
+import type { ComboPart } from '../types';
 
 // このツールで利用可能なキャラクターのリスト
 export const AVAILABLE_CHARACTERS = [

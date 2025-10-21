@@ -204,68 +204,105 @@ select#character-filter {
   border-color: var(--primary-color);
 }
 
-
 /* --- Library Tabs --- */
 .library-tabs {
   display: flex;
   border-bottom: 1px solid #444;
   margin-bottom: 1rem;
+  flex-shrink: 0;
 }
 
-.library-tab-button {
+.tab-button {
   flex: 1;
+  padding: 0.75rem 0.5rem;
   background-color: transparent;
   border: none;
+  border-bottom: 3px solid transparent;
   color: var(--text-secondary-color);
-  padding: 0.75rem 0.5rem;
-  font-size: 1rem;
-  font-family: var(--font-secondary);
-  font-weight: 500;
+  font-size: 1.1rem;
+  font-family: var(--font-primary);
   cursor: pointer;
-  transition: color 0.2s ease, border-bottom-color 0.2s ease;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px; /* Overlap the container's border */
+  transition: color 0.2s ease, border-color 0.2s ease;
+  text-transform: uppercase;
 }
 
-.library-tab-button:hover:not(:disabled) {
+.tab-button:hover:not(:disabled) {
   color: var(--text-color);
 }
 
-.library-tab-button.active {
+.tab-button.active {
   color: var(--primary-color);
   border-bottom-color: var(--primary-color);
 }
 
-.library-tab-button:disabled {
-  color: #555;
-  cursor: not-allowed;
+.tab-button:disabled {
+    color: #666;
+    cursor: not-allowed;
 }
 
-.sample-combos-list-container {
-  padding-top: 0.5rem;
+.tab-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-height: 0; /* This is crucial for allowing children to scroll */
 }
 
+/* --- Sample Combos Tab --- */
 .sample-combos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.sample-combo-card {
+  background-color: #333;
+  border-radius: 6px;
+  padding: 1rem;
+  border-left: 4px solid #03a9f4; /* A different color for samples */
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sample-combo-card h3 {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.sample-combo-parts {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-.sample-combo-button {
+.sample-combo-parts .tag {
+  background-color: #444;
+  color: #ccc;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+.load-sample-button {
   background-color: #3e3e3e;
   color: var(--primary-color);
   border: 1px solid var(--primary-color);
+  padding: 0.5rem 1rem;
+  font-family: var(--font-secondary);
+  font-weight: 500;
   border-radius: 4px;
-  padding: 0.4rem 0.8rem;
   cursor: pointer;
+  align-self: flex-end;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.sample-combo-button:hover {
+.load-sample-button:hover {
   background-color: var(--primary-color);
   color: #000;
 }
-
 
 .tag-filter-container {
   display: flex;
@@ -957,7 +994,6 @@ footer {
   color: var(--text-secondary-color);
   flex-shrink: 0;
 }
-
 
 @media (max-width: 900px) {
   main {
