@@ -6,6 +6,23 @@
     <title>SF6 Combo Weaver</title>
     <meta name="description" content="Street Fighter 6のコンボを自由に組み合わせて動画で確認できるツール" />
 
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' https://www.youtube.com https://aistudiocdn.com https://ai.studio 'unsafe-inline' data:;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://ai.studio https://aistudio.google.com;
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' data: https://ai.studio;
+      media-src 'self' https://storage.googleapis.com;
+      connect-src 'self' https://generativelanguage.googleapis.com https://vitals.vercel-insights.com;
+      frame-src 'self' https://www.youtube.com;
+      frame-ancestors 'self' https://aistudio.google.com https://*.scf.usercontent.goog;
+      manifest-src 'self' https://ai.studio;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+    ">
+
     <!-- PWA Manifest, Favicon, Theme -->
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#2a2a2a" />
@@ -28,9 +45,9 @@
 <script type="importmap">
 {
   "imports": {
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^18.3.1/",
+    "react/": "https://aistudiocdn.com/react@^18.3.1/",
+    "react": "https://aistudiocdn.com/react@^18.3.1",
     "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0"
   }
 }
