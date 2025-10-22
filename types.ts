@@ -52,3 +52,11 @@ export interface AiGeneratedCombo {
   partIds: string[];
   explanation: string;
 }
+
+export interface SpecialMove {
+  name: string; // 表示名 e.g., "OD波動拳"
+  notation: string; // コンボ文字列 e.g., "OD波動拳"
+  driveCost: number;
+  saCost: number; // in bars
+  type: 'special' | 'sa';
+}

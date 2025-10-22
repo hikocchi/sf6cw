@@ -4,7 +4,8 @@ import { HowToModal } from './components/HowToModal';
 import { PartPickerModal } from './components/PartPickerModal';
 import { PartCard } from './components/PartCard';
 import { SequenceItem, DropIndicator } from './components/SequenceItem';
-import { PlayIcon, PauseIcon, RewindIcon, StopIcon, StarIcon, ShareIcon } from './components/Icons';
+import { PlayIcon, PauseIcon, RewindIcon, StopIcon, StarIcon, ShareIcon, ControllerIcon } from './components/Icons';
+import { VisualComboBuilder } from './components/VisualComboBuilder';
 import { useDeviceState } from './hooks/useDeviceState';
 import { useCharacterData } from './hooks/useCharacterData';
 import { useFilters } from './hooks/useFilters';
@@ -64,7 +65,7 @@ export const App = () => {
   const [activeTab, setActiveTab] = useState<'library' | 'samples' | 'favorites'>('library');
 
   const { isMobileView } = useDeviceState();
-  const { comboParts, sampleCombos, isLoading } = useCharacterData(character);
+  const { comboParts, sampleCombos, specialMoves, isLoading } = useCharacterData(character);
   const { tags, handleTagClick, resetFilters, availableTags, filteredParts } = useFilters(comboParts);
   const { sequence, setSequence, addPartToSequence, removeFromSequence, clearSequence, loadSampleCombo, comboStats } = useSequence();
   const { refs: playerRefs, state: playerState, actions: playerActions } = useVideoPlayer(sequence);
@@ -75,6 +76,7 @@ export const App = () => {
   const [isPartPickerModalOpen, setIsPartPickerModalOpen] = useState(false);
   const [isCharSelectExpanded, setIsCharSelectExpanded] = useState(true);
   const [isLibraryExpanded, setIsLibraryExpanded] = useState(true);
+  const [isComboBuilderExpanded, setIsComboBuilderExpanded] = useState(false);
   const [isHowToModalOpen, setIsHowToModalOpen] = useState(false);
   const [isSaveFavoriteModalOpen, setIsSaveFavoriteModalOpen] = useState(false);
   const [showCopyFeedback, setShowCopyFeedback] = useState(false);
@@ -579,6 +581,16 @@ ${url.toString()}
                 })}
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className={`vcb-section collapsible-section ${isComboBuilderExpanded ? 'expanded' : ''}`}>
+           <h2 onClick={() => setIsComboBuilderExpanded(p => !p)} role="button">
+            <span><ControllerIcon /> Visual Combo Builder</span>
+            <span className={`expand-icon ${isComboBuilderExpanded ? 'expanded' : ''}`} aria-hidden="true">▼</span>
+          </h2>
+          <div className="collapsible-content">
+            <VisualComboBuilder character={character} specialMoves={specialMoves} />
           </div>
         </section>
         

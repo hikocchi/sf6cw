@@ -1,4 +1,36 @@
-import type { ComboPart } from '../types';
+import type { ComboPart, SpecialMove } from '../types';
+
+export const ryuSpecialMoves: SpecialMove[] = [
+  // Specials
+  { name: '弱 波動拳', notation: '弱波動拳', driveCost: 0, saCost: 0, type: 'special' },
+  { name: '中 波動拳', notation: '中波動拳', driveCost: 0, saCost: 0, type: 'special' },
+  { name: '強 波動拳', notation: '強波動拳', driveCost: 0, saCost: 0, type: 'special' },
+  { name: 'OD 波動拳', notation: 'OD波動拳', driveCost: 2, saCost: 0, type: 'special' },
+
+  { name: '弱 昇竜拳', notation: '弱昇竜', driveCost: 0, saCost: 0, type: 'special' },
+  { name: '中 昇竜拳', notation: '中昇竜', driveCost: 0, saCost: 0, type: 'special' },
+  { name: '強 昇竜拳', notation: '強昇竜', driveCost: 0, saCost: 0, type: 'special' },
+  { name: 'OD 昇竜拳', notation: 'OD昇竜', driveCost: 2, saCost: 0, type: 'special' },
+
+  { name: '弱 竜巻旋風脚', notation: '弱竜巻', driveCost: 0, saCost: 0, type: 'special' },
+  { name: '中 竜巻旋風脚', notation: '中竜巻', driveCost: 0, saCost: 0, type: 'special' },
+  { name: '強 竜巻旋風脚', notation: '強竜巻', driveCost: 0, saCost: 0, type: 'special' },
+  { name: 'OD 竜巻旋風脚', notation: 'OD竜巻', driveCost: 2, saCost: 0, type: 'special' },
+
+  { name: '弱 足刀蹴り', notation: '弱足刀', driveCost: 0, saCost: 0, type: 'special' },
+  { name: '中 足刀蹴り', notation: '中足刀', driveCost: 0, saCost: 0, type: 'special' },
+  { name: '強 足刀蹴り', notation: '強足刀', driveCost: 0, saCost: 0, type: 'special' },
+  { name: 'OD 足刀蹴り', notation: 'OD足刀', driveCost: 2, saCost: 0, type: 'special' },
+
+  { name: '空中竜巻旋風脚', notation: '空中竜巻', driveCost: 0, saCost: 0, type: 'special' },
+  { name: 'OD 空中竜巻旋風脚', notation: 'OD空中竜巻', driveCost: 2, saCost: 0, type: 'special' },
+
+  // Super Arts
+  { name: 'SA1 真空波動拳', notation: 'SA1', driveCost: 0, saCost: 1, type: 'sa' },
+  { name: 'SA2 真波掌撃', notation: 'SA2', driveCost: 0, saCost: 2, type: 'sa' },
+  { name: 'SA3 真・昇龍拳', notation: 'SA3', driveCost: 0, saCost: 3, type: 'sa' },
+  { name: 'CA 真・昇龍拳', notation: 'CA真・昇龍拳', driveCost: 0, saCost: 3, type: 'sa' },
+];
 
 export const ryuComboParts: ComboPart[] = [
   {

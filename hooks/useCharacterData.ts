@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { fetchCharacterData } from '../data';
-import type { ComboPart, SampleCombo } from '../types';
+import type { ComboPart, SampleCombo, SpecialMove } from '../types';
 
 export const useCharacterData = (character: string) => {
   const [comboParts, setComboParts] = useState<ComboPart[]>([]);
   const [sampleCombos, setSampleCombos] = useState<SampleCombo[]>([]);
+  const [specialMoves, setSpecialMoves] = useState<SpecialMove[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -16,10 +17,12 @@ export const useCharacterData = (character: string) => {
         const sortedParts = data.comboParts.sort((a, b) => a.order - b.order);
         setComboParts(sortedParts);
         setSampleCombos(data.sampleCombos);
+        setSpecialMoves(data.specialMoves);
       } catch (error) {
         console.error(`Failed to load data for ${character}`, error);
         setComboParts([]);
         setSampleCombos([]);
+        setSpecialMoves([]);
       } finally {
         setIsLoading(false);
       }
@@ -27,5 +30,5 @@ export const useCharacterData = (character: string) => {
     loadData();
   }, [character]);
 
-  return { comboParts, sampleCombos, isLoading };
+  return { comboParts, sampleCombos, specialMoves, isLoading };
 };
