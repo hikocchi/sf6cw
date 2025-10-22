@@ -4,6 +4,7 @@ import {
   ArrowUpLeft, ArrowUp, ArrowUpRight, ArrowLeft, ArrowRight,
   ArrowDownLeft, ArrowDown, ArrowDownRight
 } from './Icons';
+import './VisualComboBuilder.css';
 
 interface VisualComboBuilderProps {
   character: string;
@@ -14,7 +15,7 @@ const DIRECTIONS = [
   { key: 'up-left', label: '左斜上', icon: <ArrowUpLeft /> },
   { key: 'up', label: '上', icon: <ArrowUp /> },
   { key: 'up-right', label: '右斜上', icon: <ArrowUpRight /> },
-  { key: 'left', label: '後', icon: <ArrowLeft /> },
+  { key: 'left', label: '引', icon: <ArrowLeft /> },
   { key: 'neutral', label: 'N', icon: null },
   { key: 'right', label: '前', icon: <ArrowRight /> },
   { key: 'down-left', label: '左斜下', icon: <ArrowDownLeft /> },
@@ -164,7 +165,7 @@ export const VisualComboBuilder: React.FC<VisualComboBuilderProps> = ({ characte
         <div className="vcb-controls">
           <div className={`vcb-feedback ${showCopyFeedback ? 'visible' : ''}`}>コピーしました！</div>
           <button onClick={handleDelete} disabled={!comboString}>1コマンド削除</button>
-          <button onClick={handleClear} disabled={!comboString}>クリア</button>
+          <button onClick={handleClear} disabled={!comboString}>全コマンド削除</button>
           <button onClick={handleCopy} disabled={!comboString}>コピー</button>
         </div>
       </div>
@@ -180,7 +181,7 @@ export const VisualComboBuilder: React.FC<VisualComboBuilderProps> = ({ characte
           <span>{saGauge} / 3</span>
         </div>
       </div>
-
+      <p className="vcb-notation-notice">※コマンド表記は全て1P側のものです。</p>
       <div className="vcb-controller-area">
         <div className="vcb-d-pad">
           {DIRECTIONS.map(({ key, label, icon }) => (

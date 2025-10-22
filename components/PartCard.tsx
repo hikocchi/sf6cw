@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ComboPart } from '../types';
+import './PartCard.css';
 
 export const PartCard: React.FC<{ part: ComboPart; onPartClick: (part: ComboPart, event: React.MouseEvent<HTMLDivElement>) => void; }> = ({ part, onPartClick }) => {
   const partTags = [

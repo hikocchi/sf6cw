@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { HOW_TO_USE_VIDEO_ID } from '../constants';
+import './Modal.css';
 
 export const HowToModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const playerRef = useRef<any>(null);

@@ -1,0 +1,77 @@
+.sequence-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #333;
+  padding: 0.75rem;
+  border-radius: 4px;
+  border-left: 4px solid #03a9f4; /* Different color for sequence items */
+  transition: opacity 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.sequence-item.dragging {
+  opacity: 0.5;
+  border-style: dashed;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+  background-color: #4f4f4f;
+}
+
+
+.sequence-item span {
+  flex-grow: 1;
+  margin-right: 0.5rem;
+  padding-left: 0.5rem;
+}
+
+.item-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sequence-item button:not(.drag-handle) {
+  background: none;
+  border: none;
+  color: #ff5252;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+}
+
+.sequence-item.playing {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 10px var(--primary-color);
+}
+
+.drag-handle {
+  display: block;
+  background: none;
+  border: none;
+  cursor: grab;
+  font-size: 1.5rem;
+  color: var(--text-secondary-color);
+  padding: 0 0.5rem;
+  touch-action: none; /* Prevent browser touch gestures like scroll/zoom */
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+
+/* Desktop drag-and-drop indicator */
+.drop-indicator {
+  height: 4px;
+  margin: 2px 0;
+  border-radius: 2px;
+  background-color: transparent;
+  transition: height 0.2s ease, background-color 0.2s ease, border 0.2s ease, margin 0.2s ease;
+}
+
+.drop-indicator.active {
+  height: 30px;
+  margin: 4px 0;
+  background-color: rgba(255, 193, 7, 0.2);
+  border: 2px dashed var(--primary-color);
+}

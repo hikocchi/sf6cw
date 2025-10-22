@@ -1,5 +1,6 @@
 import React from 'react';
 import type { SequencePart } from '../types';
+import './SequenceItem.css';
 
 export const SequenceItem: React.FC<{
   part: SequencePart;

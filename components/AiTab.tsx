@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { ComboPart, AiComboRequest, AiGeneratedCombo } from '../types';
 import { useGemini } from '../hooks/useGemini';
+import './AiTab.css';
 
 interface AiTabProps {
   character: string;

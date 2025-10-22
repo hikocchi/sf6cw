@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import type { ComboPart, SequencePart } from '../types';
+import './PartPickerModal.css';
 
 export const PartPickerModal: React.FC<{
   isOpen: boolean;
