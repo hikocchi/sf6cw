@@ -4,7 +4,7 @@
   "private": true,
   "description": "SF6コンボ確認動画ツール",
   "scripts": {
-    "build": "mkdir -p dist && cp index.html dist/index.html && cp -r data dist/data && cp manifest.json dist/manifest.json && cp index.css dist/index.css && esbuild index.tsx --bundle --outfile=dist/index.js --loader:.ts=tsx --define:process.env.NODE_ENV='\"production\"' --minify"
+    "build": "mkdir -p dist && cp index.html dist/index.html && cp -r data dist/data && cp manifest.json dist/manifest.json && cp icon.svg dist/icon.svg && esbuild index.tsx --bundle --outdir=dist --loader:.ts=tsx --define:process.env.NODE_ENV='\"production\"' --minify"
   },
   "dependencies": {
     "react": "^18.3.1",
