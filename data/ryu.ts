@@ -1,4 +1,4 @@
-import type { ComboPart, SpecialMove } from '../types';
+import type { ComboPart, SpecialMove, UniqueMove } from '../types';
 
 export const ryuSpecialMoves: SpecialMove[] = [
   // Specials
@@ -32,11 +32,12 @@ export const ryuSpecialMoves: SpecialMove[] = [
   { name: 'CA 真・昇龍拳', notation: 'CA真・昇龍拳', driveCost: 0, saCost: 3, type: 'sa' },
 ];
 
-export const ryuComboParts: ComboPart[] = [
+export const ryuUniqueMoves: UniqueMove[] = [];
+
+export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
   // --- 始動 (Starters) ---
   {
     id: 'ryu-001',
-    character: 'リュウ',
     name: '小技始動１',
     comboparts: '弱P(K) ＞ 強昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-001.mp4',
@@ -49,7 +50,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-005',
-    character: 'リュウ',
     name: '中足ラッシュ',
     comboparts: '屈中P(K) ＞ キャンセルラッシュ ＞ 強P ＞ 引強P ＞ 強昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-005.mp4',
@@ -63,7 +63,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-004',
-    character: 'リュウ',
     name: '小技カウンター始動',
     comboparts: '弱P(K) ＞ 屈中P ＞ OD足刀 ＞ 引強K ＞ 強昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-004.mp4',
@@ -78,7 +77,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-017',
-    character: 'リュウ',
     name: '小技始動２',
     comboparts: '弱P(K) ＞ OD竜巻 ＞ 電刃SA1',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-017.mp4',
@@ -92,7 +90,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-016',
-    character: 'リュウ',
     name: 'OD波動始動',
     comboparts: 'OD波動 ＞ SA1',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-016.mp4',
@@ -105,7 +102,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-021',
-    character: 'リュウ',
     name: '画面端　ドライブインパクト　壁当て始動',
     comboparts: 'DI ＞ 強P ＞ 中波掌 ＞ 強昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-021.mp4',
@@ -119,7 +115,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-009',
-    character: 'リュウ',
     name: '大ゴス始動',
     comboparts: '前強P ＞ 屈中P ＞ OD足刀 ＞ 引強K ＞ 強昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-009.mp4',
@@ -133,7 +128,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-018',
-    character: 'リュウ',
     name: 'ドライブインパクト　パニカン始動',
     comboparts: 'DI ＞ 前強P ＞ 屈中P ＞ OD足刀 ＞ 引強K ＞ 強昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-018.mp4',
@@ -148,7 +142,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-006',
-    character: 'リュウ',
     name: '中Pパニカン始動',
     comboparts: '中P ＞ 強P ＞ OD足刀 ＞ 引強K ＞ 強昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-006.mp4',
@@ -163,7 +156,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-007',
-    character: 'リュウ',
     name: '画面端　中Pパニカン始動１',
     comboparts: '中P ＞ 強P ＞ OD竜巻 ＞ 強昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-007.mp4',
@@ -178,7 +170,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-019',
-    character: 'リュウ',
     name: '画面端　ドライブインパクト　パニカン始動１',
     comboparts: 'DI ＞ 前強P ＞ 屈中P ＞ OD竜巻 ＞ 強昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-019.mp4',
@@ -192,7 +183,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-015',
-    character: 'リュウ',
     name: '画面端　前強K始動',
     comboparts: '前強K ＞ 空中OD竜巻 ＞ 強昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-015.mp4',
@@ -207,7 +197,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-010',
-    character: 'リュウ',
     name: '画面端　中足始動',
     comboparts: '屈中K（強P） ＞ OD電刃波掌 ＞ （微歩き）屈強P ＞ 中波掌 ＞ 強昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-010.mp4',
@@ -222,7 +211,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-011',
-    character: 'リュウ',
     name: '強K　パニカン始動１',
     comboparts: '強K ＞ 強P ＞ OD足刀 ＞ 引強K ＞ 強昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-011.mp4',
@@ -237,7 +225,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-013',
-    character: 'リュウ',
     name: '画面端　強K　パニカン始動２',
     comboparts: '強K ＞ 強P ＞ OD竜巻 ＞ 強昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-013.mp4',
@@ -251,7 +238,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-012',
-    character: 'リュウ',
     name: '画面端　強K　パニカン始動１',
     comboparts: '強K ＞ 引強P ＞ 強足刀 ＞ 中昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-012.mp4',
@@ -264,7 +250,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-022',
-    character: 'リュウ',
     name: '画面端　ドライブインパクト　スタン始動',
     comboparts: 'DI ＞ 集中 ＞ 電刃SA2Lv3 ＞ R ＞ 屈強P ＞ 中波掌 ＞ 強昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-022.mp4',
@@ -280,7 +265,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-040',
-    character: 'リュウ',
     name: '画面端　強Pパニカン始動',
     comboparts: '強P ＞ 電刃SA2Lv2 ＞ R ＞ 屈強P ＞ 中波掌 ＞ 強昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-040.mp4',
@@ -296,7 +280,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-020',
-    character: 'リュウ',
     name: '画面端　ドライブインパクト　パニカン始動２',
     comboparts: 'DI ＞ 前強P ＞ 屈中P ＞ OD竜巻 ＞ R ＞ 屈中P ＞ CR ＞ 屈強P ＞ 強足刀 ＞ 強昇竜 ＞ SA3',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-020.mp4',
@@ -310,7 +293,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-008',
-    character: 'リュウ',
     name: '画面端　中Pパニカン始動２',
     comboparts: '中P ＞ 強P ＞ OD竜巻 ＞ R ＞ 屈中P ＞ CR ＞ 屈強P ＞ 強足刀 ＞ 強昇竜 ＞ SA3',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-008.mp4',
@@ -326,7 +308,6 @@ export const ryuComboParts: ComboPart[] = [
   // --- 起き攻め (Okizeme) ---
   {
     id: 'ryu-002',
-    character: 'リュウ',
     name: '起き攻め１',
     comboparts: '前ステ ＞ 微歩き ＞ 投げ',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-002.mp4',
@@ -339,7 +320,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-034',
-    character: 'リュウ',
     name: '画面端　起き攻め３',
     comboparts: '強K（F消費） ＞ 投げ',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-034.mp4',
@@ -352,7 +332,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-043',
-    character: 'リュウ',
     name: '画面端　起き攻め５',
     comboparts: '屈弱K（F消費） > 屈弱K（F消費） > 投げ',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-043.mp4',
@@ -367,7 +346,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-045',
-    character: 'リュウ',
     name: '画面端　起き攻め７',
     comboparts: '弱P（F消費） ＞ 投げ',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-045.mp4',
@@ -381,7 +359,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-032',
-    character: 'リュウ',
     name: '画面端　起き攻め１',
     comboparts: '屈弱K（F消費） ＞ 前中P ＞ 弱P ＞ 強昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-032.mp4',
@@ -395,7 +372,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-003',
-    character: 'リュウ',
     name: '起き攻め２',
     comboparts: '前ステ ＞ 前強P ＞ 屈中P ＞ OD足刀 ＞ 引強K ＞ 強昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-003.mp4',
@@ -409,7 +385,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-033',
-    character: 'リュウ',
     name: '画面端　起き攻め２',
     comboparts: '中K（F消費） ＞ 中P ＞ 引強P ＞ 強足刀 ＞ 中昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-033.mp4',
@@ -423,7 +398,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-035',
-    character: 'リュウ',
     name: '画面端　起き攻め４',
     comboparts: '弱P（F消費） ＞ 弱K（F消費） ＞ 中P ＞ 引強P ＞ 強足刀 ＞ 中昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-035.mp4',
@@ -436,7 +410,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-044',
-    character: 'リュウ',
     name: '画面端　起き攻め６',
     comboparts: '弱P（F消費） > 弱P（F消費） > 中P > 引強P > 強足刀 > 中昇竜',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-044.mp4',
@@ -452,7 +425,6 @@ export const ryuComboParts: ComboPart[] = [
   // --- リーサル (Lethal) ---
   {
     id: 'ryu-023',
-    character: 'リュウ',
     name: '強K　パニカン始動２',
     comboparts: '強K ＞ 強P ＞ R ＞ 強K ＞ 強P ＞ R ＞ 強K ＞ 強P ＞ SA1',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-023.mp4',
@@ -466,7 +438,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-042',
-    character: 'リュウ',
     name: '強Kパニカン始動４',
     comboparts: '強K ＞ 強P ＞ CR ＞ 強K ＞ 強P ＞ CR ＞ 強K ＞ 強K ＞ SA1',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-042.mp4',
@@ -479,7 +450,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-024',
-    character: 'リュウ',
     name: '強K　パニカン始動３',
     comboparts: '強K ＞ 強P ＞ R ＞ 強K ＞ 強P ＞ R ＞ 強K ＞ 強P ＞ SA2',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-024.mp4',
@@ -493,7 +463,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-026',
-    character: 'リュウ',
     name: '強K　パニカン始動４',
     comboparts: '強K ＞ 強P ＞ OD電刃波掌 ＞ 強P ＞ R ＞ 強K ＞ 強P ＞ R ＞ 強K ＞ 強P ＞ SA1',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-026.mp4',
@@ -507,7 +476,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-041',
-    character: 'リュウ',
     name: 'リーサルコンボ１',
     comboparts: '弱波掌 ＞ R ＞ 屈中P ＞ CR ＞ 引強K ＞ CR ＞ 引強K ＞ 強昇竜 ＞ SA3',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-041.mp4',
@@ -520,7 +488,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-027',
-    character: 'リュウ',
     name: '強K　パニカン始動５',
     comboparts: '強K ＞ 強P ＞ OD電刃波掌 ＞ 強P ＞ R ＞ 強K ＞ 強P ＞ R ＞ 強K ＞ 強P ＞ SA2',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-027.mp4',
@@ -534,7 +501,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-025',
-    character: 'リュウ',
     name: '強K　パニカン始動３',
     comboparts: '強K ＞ 強P ＞ R ＞ 強K ＞ 強P ＞ R ＞ 強K ＞ 強P ＞ 強昇竜 ＞ SA3',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-025.mp4',
@@ -548,7 +514,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-029',
-    character: 'リュウ',
     name: '画面端　強K　パニカン始動４',
     comboparts: '強K ＞ 強P ＞ R ＞ 強K ＞ 強P ＞ R ＞ 強P ＞ 引強P ＞ 強足刀 ＞ 中昇竜  ＞ SA3',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-029.mp4',
@@ -562,7 +527,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-014',
-    character: 'リュウ',
     name: '画面端　強K　パニカン始動３',
     comboparts: '強K ＞ 強P ＞ OD竜巻 ＞ R ＞ 屈中P ＞ CR ＞ 屈強P ＞ 強足刀 ＞ 強昇竜 ＞ SA3',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-014.mp4',
@@ -576,7 +540,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-028',
-    character: 'リュウ',
     name: '強K　パニカン始動６',
     comboparts: '強K ＞ 強P ＞ OD電刃波掌 ＞ 強P ＞ R ＞ 強K ＞ 強P ＞ R ＞ 強K ＞ 強P ＞ 強昇竜 ＞ SA3',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-028.mp4',
@@ -590,7 +553,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-030',
-    character: 'リュウ',
     name: '画面端　強K　パニカン始動５',
     comboparts: '強K ＞ 強P ＞ OD電刃波掌 ＞ 強P ＞ R ＞ 強K ＞ 強P ＞ R ＞ 強P ＞ 引強P ＞ 強足刀 ＞ 中昇竜 ＞ SA3',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-030.mp4',
@@ -604,7 +566,6 @@ export const ryuComboParts: ComboPart[] = [
   },
   {
     id: 'ryu-031',
-    character: 'リュウ',
     name: '画面端　最大ダメージ',
     comboparts: '強足刀 ＞ 電刃SALv2 ＞ R ＞ 屈強P ＞ CR ＞ （ディレイ）中P ＞ R ＞ 引強P ＞ CR ＞ 屈強P ＞ 強足刀 ＞ SA1 ',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-031.mp4',

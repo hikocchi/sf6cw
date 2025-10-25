@@ -1,9 +1,8 @@
 import type { ComboPart } from '../types';
 
-export const guileComboParts: ComboPart[] = [
+export const guileComboParts: Omit<ComboPart, 'character'>[] = [
   {
     id: 'guile-001',
-    character: 'ガイル',
     name: 'guile-001',
     comboparts: 'ソニックブーム',
     videoUrl: 'https://www.streetfighter.com/6/character/guile/frame/special#SonicBoom',
@@ -11,7 +10,6 @@ export const guileComboParts: ComboPart[] = [
   },
   {
     id: 'guile-002',
-    character: 'ガイル',
     name: 'guile-002',
     comboparts: 'サマーソルトキック',
     videoUrl: 'https://www.streetfighter.com/6/character/guile/frame/special#SomersaultKick',

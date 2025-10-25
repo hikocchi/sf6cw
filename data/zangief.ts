@@ -1,9 +1,8 @@
 import type { ComboPart } from '../types';
 
-export const zangiefComboParts: ComboPart[] = [
+export const zangiefComboParts: Omit<ComboPart, 'character'>[] = [
   {
     id: 'zangief-001',
-    character: 'ザンギエフ',
     name: 'zangief-001',
     comboparts: 'スクリューパイルドライバー',
     videoUrl: 'https://www.streetfighter.com/6/character/zangief/frame/special#ScrewPiledriver',
@@ -11,7 +10,6 @@ export const zangiefComboParts: ComboPart[] = [
   },
   {
     id: 'zangief-002',
-    character: 'ザンギエフ',
     name: 'zangief-002',
     comboparts: 'ダブルラリアット',
     videoUrl: 'https://www.streetfighter.com/6/character/zangief/frame/special#DoubleLariat',

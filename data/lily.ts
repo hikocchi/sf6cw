@@ -1,9 +1,8 @@
 import type { ComboPart } from '../types';
 
-export const lilyComboParts: ComboPart[] = [
+export const lilyComboParts: Omit<ComboPart, 'character'>[] = [
   {
     id: 'lily-001',
-    character: 'リリー',
     name: 'lily-001',
     comboparts: 'コンドルウィンド',
     videoUrl: 'https://www.streetfighter.com/6/character/lily/frame/special#CondorWind',
@@ -11,7 +10,6 @@ export const lilyComboParts: ComboPart[] = [
   },
   {
     id: 'lily-002',
-    character: 'リリー',
     name: 'lily-002',
     comboparts: 'コンドルスパイア',
     videoUrl: 'https://www.streetfighter.com/6/character/lily/frame/special#CondorSpire',

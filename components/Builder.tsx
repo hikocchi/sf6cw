@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { SequencePart, SpecialMove } from '../types';
+import type { SequencePart, SpecialMove, UniqueMove } from '../types';
 import { SequenceItem, DropIndicator } from './SequenceItem';
 import { PlayIcon, PauseIcon, RewindIcon, StopIcon, StarIcon, ShareIcon, ControllerIcon } from './Icons';
 import { VisualComboBuilder } from './VisualComboBuilder';
@@ -22,6 +22,7 @@ interface BuilderProps {
   isMobileView: boolean;
   character: string;
   specialMoves: SpecialMove[];
+  uniqueMoves: UniqueMove[];
 }
 
 
@@ -42,6 +43,7 @@ export const Builder: React.FC<BuilderProps> = ({
   isMobileView,
   character,
   specialMoves,
+  uniqueMoves,
 }) => {
   const [isComboBuilderExpanded, setIsComboBuilderExpanded] = useState(false);
   
@@ -181,7 +183,7 @@ export const Builder: React.FC<BuilderProps> = ({
           <span className={`expand-icon ${isComboBuilderExpanded ? 'expanded' : ''}`} aria-hidden="true">▼</span>
         </h2>
         <div className="collapsible-content">
-          <VisualComboBuilder character={character} specialMoves={specialMoves} />
+          <VisualComboBuilder character={character} specialMoves={specialMoves} uniqueMoves={uniqueMoves} />
         </div>
       </section>
       
@@ -197,6 +199,7 @@ export const Builder: React.FC<BuilderProps> = ({
           <li><strong>R</strong> → ドライブラッシュ（生ラッシュ）</li>
           <li><strong>CR</strong> → キャンセルラッシュ</li>
           <li><strong>Dn(1~6)本</strong> → ドライブゲージn(1~6)本使用するコンボ</li>
+          <li><strong>J、前J、後J</strong> → ジャンプ。Jは垂直。</li>
           <li><strong>💥</strong> → ダメージ量を表します。</li>
           <li><strong>⏰</strong> → 技後の有利・不利フレームを表します。</li>
         </ul>

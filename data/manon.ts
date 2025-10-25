@@ -1,9 +1,8 @@
 import type { ComboPart } from '../types';
 
-export const manonComboParts: ComboPart[] = [
+export const manonComboParts: Omit<ComboPart, 'character'>[] = [
   {
     id: 'manon-001',
-    character: 'マノン',
     name: 'manon-001',
     comboparts: 'マネージュ・ドレ',
     videoUrl: 'https://www.streetfighter.com/6/character/manon/frame/special#ManegeDore',
@@ -11,7 +10,6 @@ export const manonComboParts: ComboPart[] = [
   },
   {
     id: 'manon-002',
-    character: 'マノン',
     name: 'manon-002',
     comboparts: 'ランヴェルセ',
     videoUrl: 'https://www.streetfighter.com/6/character/manon/frame/special#Renverse',

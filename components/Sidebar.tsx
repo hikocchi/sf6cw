@@ -44,7 +44,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   handleDeleteFavorite,
   handleShowMoreClick,
   showAllParts,
-  characterFavorites
+  characterFavorites,
 }) => {
   const [isCharSelectExpanded, setIsCharSelectExpanded] = useState(true);
   const [isLibraryExpanded, setIsLibraryExpanded] = useState(true);

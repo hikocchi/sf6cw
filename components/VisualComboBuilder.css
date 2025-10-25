@@ -126,10 +126,14 @@
 
 .vcb-controller-area {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   gap: 2rem;
-  flex-wrap: wrap;
+}
+
+.vcb-controller-left {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
 }
 
 .vcb-d-pad {
@@ -212,13 +216,13 @@
   padding: 1rem;
   border-radius: 8px;
   background-color: var(--background-color);
+  flex: 1; /* Grow to fill available space */
 }
 
-.vcb-palette-section {
+.vcb-palette-section .vcb-palette-header {
+  margin-bottom: 0.75rem;
 }
-.vcb-palette-header {
-  margin-bottom: 1rem;
-}
+
 .vcb-palette-header h4 {
   font-family: var(--font-primary);
   font-size: 1.5rem;
@@ -227,33 +231,14 @@
   padding: 0;
   border: none;
 }
-.vcb-palette-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 0.75rem;
-}
-.vcb-palette-grid button {
-  background-color: #3e3e3e;
-  color: var(--primary-color);
-  border: 1px solid var(--primary-color);
-  padding: 0.75rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 1rem;
-}
-.vcb-palette-grid button:hover:not(:disabled) { background-color: var(--primary-color); color: #000; }
-.vcb-palette-grid button:disabled { background-color: #333; color: #777; border-color: #555; cursor: not-allowed; }
-.vcb-palette-grid button.active {
-    background-color: var(--primary-color);
-    color: #000;
-    box-shadow: 0 0 8px var(--primary-color);
-}
 
 .vcb-palette-content {
   padding: 1rem;
   background-color: var(--background-color);
   border-radius: 6px;
+}
+
+.vcb-specials-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
@@ -285,6 +270,10 @@
 
 .vcb-sa-buttons {
   grid-template-columns: repeat(4, 1fr);
+}
+
+.vcb-sa-palette-content > .vcb-move-group {
+  max-width: 50%;
 }
 
 .vcb-strength-buttons button {

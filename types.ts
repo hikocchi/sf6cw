@@ -35,28 +35,19 @@ export interface FavoriteCombo {
 
 export type TagCategoryKey = keyof typeof import('./constants').TAG_CATEGORIES;
 
-// FIX: Add missing type definitions for AI features.
-export interface AiComboRequest {
-  character: string;
-  parts: ComboPart[];
-  conditions: {
-    purpose: string;
-    position: string;
-    starter: string;
-    driveGauge: number;
-    saGauge: string;
-  };
-}
-
-export interface AiGeneratedCombo {
-  partIds: string[];
-  explanation: string;
-}
-
 export interface SpecialMove {
   name: string; // 表示名 e.g., "OD波動拳"
   notation: string; // コンボ文字列 e.g., "OD波動拳"
   driveCost: number;
   saCost: number; // in bars
   type: 'special' | 'sa';
+}
+
+// 奮迅脚のような特殊な派生技やユニークなムーブのための型
+export interface UniqueMove {
+  name: string;       // ボタンの表示名 (e.g., "急停止")
+  notation: string;   // コンボ表記 (e.g., "急停止")
+  driveCost?: number;
+  saCost?: number;
+  group: string;      // UI上のグループ名 (e.g., "奮迅脚派生")
 }

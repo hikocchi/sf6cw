@@ -28,13 +28,17 @@ export const useFilters = (comboParts: ComboPart[]) => {
         tagType: new Set(), tagCondition: new Set(), startCondition: new Set(),
         tagDriveGauge: new Set(), tagSaGauge: new Set(),
     };
+    
     for (const part of comboParts) {
         if (part.tagType) categories.tagType.add(part.tagType);
         if (part.startCondition) categories.startCondition.add(part.startCondition);
         if (part.tagCondition) part.tagCondition.forEach(tag => categories.tagCondition.add(tag));
-        if (part.tagDriveGauge) categories.tagDriveGauge.add(part.tagDriveGauge);
-        if (part.tagSaGauge) categories.tagSaGauge.add(part.tagSaGauge);
+        
+        // ゲージタグを追加します。未定義または空の場合は '0' として扱います。
+        categories.tagDriveGauge.add(part.tagDriveGauge || '0');
+        categories.tagSaGauge.add(part.tagSaGauge || '0');
     }
+
     const sortNumerically = (a: string, b: string) => (parseInt(a.match(/\d+/)?.[0] || '0') - parseInt(b.match(/\d+/)?.[0] || '0'));
     return {
         tagType: [...categories.tagType].sort(),
@@ -50,7 +54,13 @@ export const useFilters = (comboParts: ComboPart[]) => {
       for (const key of Object.keys(TAG_CATEGORIES) as TagCategoryKey[]) {
         const selectedTags = tags[key];
         if (selectedTags.size === 0) continue;
-        if (key === 'tagCondition') {
+
+        if (key === 'tagDriveGauge' || key === 'tagSaGauge') {
+          const partGauge = part[key] || '0'; // プロパティがなければ '0' とする
+          if (!selectedTags.has(partGauge)) {
+            return false;
+          }
+        } else if (key === 'tagCondition') {
           if (!part.tagCondition || !([...selectedTags].every(t => part.tagCondition!.includes(t)))) return false;
         } else {
           if (!part[key] || !selectedTags.has(part[key] as string)) return false;

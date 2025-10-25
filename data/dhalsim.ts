@@ -1,9 +1,8 @@
 import type { ComboPart } from '../types';
 
-export const dhalsimComboParts: ComboPart[] = [
+export const dhalsimComboParts: Omit<ComboPart, 'character'>[] = [
   {
     id: 'dhalsim-001',
-    character: 'ダルシム',
     name: 'dhalsim-001',
     comboparts: 'ヨガファイア',
     videoUrl: 'https://www.streetfighter.com/6/character/dhalsim/frame/special#YogaFire',
@@ -11,7 +10,6 @@ export const dhalsimComboParts: ComboPart[] = [
   },
   {
     id: 'dhalsim-002',
-    character: 'ダルシム',
     name: 'dhalsim-002',
     comboparts: 'ヨガテレポート',
     videoUrl: 'https://www.streetfighter.com/6/character/dhalsim/frame/special#YogaTeleport',

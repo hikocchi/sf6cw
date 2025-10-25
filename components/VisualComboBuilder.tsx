@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import type { SpecialMove } from '../types';
+import type { SpecialMove, UniqueMove } from '../types';
 import {
   ArrowUpLeft, ArrowUp, ArrowUpRight, ArrowLeft, ArrowRight,
   ArrowDownLeft, ArrowDown, ArrowDownRight
@@ -9,6 +9,7 @@ import './VisualComboBuilder.css';
 interface VisualComboBuilderProps {
   character: string;
   specialMoves: SpecialMove[];
+  uniqueMoves: UniqueMove[];
 }
 
 const DIRECTIONS = [
@@ -43,7 +44,7 @@ const SPECIAL_ACTIONS = [
   { label: 'KK', notation: 'KK', driveCost: 0, saCost: 0 },
 ];
 
-export const VisualComboBuilder: React.FC<VisualComboBuilderProps> = ({ character, specialMoves }) => {
+export const VisualComboBuilder: React.FC<VisualComboBuilderProps> = ({ character, specialMoves, uniqueMoves }) => {
   const [comboString, setComboString] = useState('');
   const [selectedDirection, setSelectedDirection] = useState<string | null>(null);
   const [driveGauge, setDriveGauge] = useState(0);
@@ -147,6 +148,18 @@ export const VisualComboBuilder: React.FC<VisualComboBuilderProps> = ({ characte
     return saMoves;
   }, [specialMoves]);
 
+  const groupedUniqueMoves = useMemo(() => {
+    if (!uniqueMoves || uniqueMoves.length === 0) return [];
+    const groups = new Map<string, UniqueMove[]>();
+    for (const move of uniqueMoves) {
+      if (!groups.has(move.group)) {
+        groups.set(move.group, []);
+      }
+      groups.get(move.group)!.push(move);
+    }
+    return Array.from(groups.entries());
+  }, [uniqueMoves]);
+
   const getStrengthLabel = (name: string) => {
     const prefixes = ['弱', '中', '強', 'OD'];
     const firstPart = name.split(' ')[0];
@@ -183,40 +196,42 @@ export const VisualComboBuilder: React.FC<VisualComboBuilderProps> = ({ characte
       </div>
       <p className="vcb-notation-notice">※コマンド表記は全て1P側のものです。</p>
       <div className="vcb-controller-area">
-        <div className="vcb-d-pad">
-          {DIRECTIONS.map(({ key, label, icon }) => (
-            <button
-              key={key}
-              className={`${key} ${selectedDirection === key ? 'active' : ''}`}
-              onClick={() => key !== 'neutral' && setSelectedDirection(key === selectedDirection ? null : key)}
-              disabled={key === 'neutral'}
-              aria-label={label}
-            >
-              {icon}
-            </button>
-          ))}
-        </div>
-        <div className="vcb-inputs-right">
-          <div className="vcb-action-buttons">
-            {ACTION_BUTTONS.map(({ label, notation }) => (
-              <button key={label} onClick={() => handleInput(notation)}>{label}</button>
+        <div className="vcb-controller-left">
+          <div className="vcb-d-pad">
+            {DIRECTIONS.map(({ key, label, icon }) => (
+              <button
+                key={key}
+                className={`${key} ${selectedDirection === key ? 'active' : ''}`}
+                onClick={() => key !== 'neutral' && setSelectedDirection(key === selectedDirection ? null : key)}
+                disabled={key === 'neutral'}
+                aria-label={label}
+              >
+                {icon}
+              </button>
             ))}
           </div>
-          <div className="vcb-special-inputs">
+          <div className="vcb-inputs-right">
+            <div className="vcb-action-buttons">
+              {ACTION_BUTTONS.map(({ label, notation }) => (
+                <button key={label} onClick={() => handleInput(notation)}>{label}</button>
+              ))}
+            </div>
+            <div className="vcb-special-inputs">
+                <div className="vcb-special-inputs-row">
+                {SPECIAL_ACTIONS.slice(0, 3).map(({ label, notation, driveCost }) => (
+                  <button key={label} onClick={() => handleInput(notation, driveCost, 0)}>{label}</button>
+                ))}
+              </div>
               <div className="vcb-special-inputs-row">
-              {SPECIAL_ACTIONS.slice(0, 3).map(({ label, notation, driveCost }) => (
-                <button key={label} onClick={() => handleInput(notation, driveCost, 0)}>{label}</button>
-              ))}
-            </div>
-            <div className="vcb-special-inputs-row">
-              {SPECIAL_ACTIONS.slice(3, 5).map(({ label, notation, driveCost }) => (
-                <button key={label} onClick={() => handleInput(notation, driveCost, 0)}>{label}</button>
-              ))}
-            </div>
-            <div className="vcb-special-inputs-row">
-              {SPECIAL_ACTIONS.slice(5).map(({ label, notation, driveCost }) => (
-                <button key={label} onClick={() => handleInput(notation, driveCost, 0)}>{label}</button>
-              ))}
+                {SPECIAL_ACTIONS.slice(3, 5).map(({ label, notation, driveCost }) => (
+                  <button key={label} onClick={() => handleInput(notation, driveCost, 0)}>{label}</button>
+                ))}
+              </div>
+              <div className="vcb-special-inputs-row">
+                {SPECIAL_ACTIONS.slice(5).map(({ label, notation, driveCost }) => (
+                  <button key={label} onClick={() => handleInput(notation, driveCost, 0)}>{label}</button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -226,7 +241,7 @@ export const VisualComboBuilder: React.FC<VisualComboBuilderProps> = ({ characte
             <div className="vcb-palette-header">
               <h4>必殺技</h4>
             </div>
-            <div className="vcb-palette-content">
+            <div className="vcb-palette-content vcb-specials-grid">
               {groupedSpecials.map(([baseName, moves]) => (
                 <div key={baseName} className="vcb-move-group">
                   <h4>{baseName}</h4>
@@ -241,11 +256,34 @@ export const VisualComboBuilder: React.FC<VisualComboBuilderProps> = ({ characte
               ))}
             </div>
           </div>
+          
+           {groupedUniqueMoves.length > 0 && (
+            <div className="vcb-palette-section">
+              <div className="vcb-palette-header">
+                <h4>特殊技 / 特殊ムーブ</h4>
+              </div>
+              <div className="vcb-palette-content vcb-specials-grid">
+                {groupedUniqueMoves.map(([groupName, moves]) => (
+                  <div key={groupName} className="vcb-move-group">
+                    <h4>{groupName}</h4>
+                    <div className="vcb-strength-buttons">
+                      {moves.map(move => (
+                        <button key={move.name} onClick={() => handleInput(move.notation, move.driveCost, move.saCost)}>
+                          {move.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="vcb-palette-section">
             <div className="vcb-palette-header">
               <h4>スーパーアーツ</h4>
             </div>
-            <div className="vcb-palette-content">
+            <div className="vcb-palette-content vcb-sa-palette-content">
               {characterSAsAndCAs.length > 0 && (
                 <div className="vcb-move-group">
                   <div className="vcb-strength-buttons vcb-sa-buttons">

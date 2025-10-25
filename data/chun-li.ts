@@ -1,9 +1,8 @@
 import type { ComboPart } from '../types';
 
-export const chunliComboParts: ComboPart[] = [
+export const chunliComboParts: Omit<ComboPart, 'character'>[] = [
   {
     id: 'chun-li-001',
-    character: '春麗',
     name: 'chun-li-001',
     comboparts: '気功拳',
     videoUrl: 'https://www.streetfighter.com/6/character/chun-li/frame/special#Kikoken',
@@ -11,7 +10,6 @@ export const chunliComboParts: ComboPart[] = [
   },
   {
     id: 'chun-li-002',
-    character: '春麗',
     name: 'chun-li-002',
     comboparts: '百裂脚',
     videoUrl: 'https://www.streetfighter.com/6/character/chun-li/frame/special#Hyakuretsukyaku',
