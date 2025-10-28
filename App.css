@@ -321,7 +321,8 @@ select#character-filter {
   padding: 0.3rem 0.8rem;
   font-size: 0.85rem;
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, text-decoration 0.2s ease, color 0.2s ease;
+  position: relative;
 }
 
 .tag-filter-button:hover {
@@ -329,10 +330,26 @@ select#character-filter {
 }
 
 .tag-filter-button.active {
-  background-color: var(--primary-color);
-  color: #000;
-  border-color: var(--primary-color);
   font-weight: 500;
+  padding-left: 1.5rem; /* Space for icon */
+}
+
+.tag-filter-button.active::before {
+  position: absolute;
+  left: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: bold;
+}
+
+.tag-filter-button.active.include {
+  background-color: var(--positive-color);
+  border-color: var(--positive-color);
+  color: #000;
+}
+
+.tag-filter-button.active.include::before {
+  content: '✓';
 }
 
 .parts-list {
@@ -554,6 +571,14 @@ select#character-filter {
 
 .combo-stats .info-item {
   white-space: nowrap;
+}
+
+.combo-stats .info-item.drive-cost {
+  color: #03a9f4; /* Drive Gauge blue */
+}
+
+.combo-stats .info-item.sa-cost {
+  color: #ff4081; /* SA Gauge pink */
 }
 
 .sequence-list-container {

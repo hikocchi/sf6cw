@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { ComboPart, SampleCombo, FavoriteCombo, SequencePart, TagCategoryKey } from '../types';
+import type { ComboPart, SampleCombo, FavoriteCombo, FilterState, TagCategoryKey } from '../types';
 import { TAG_CATEGORIES, INITIAL_PARTS_LIMIT } from '../constants';
 import { PartCard } from './PartCard';
 
@@ -11,9 +11,10 @@ interface SidebarProps {
   isLoading: boolean;
   comboParts: ComboPart[];
   sampleCombos: SampleCombo[];
-  tags: { [K in TagCategoryKey]: Set<string> };
+  tags: FilterState;
   handleTagClick: (category: TagCategoryKey, tag: string) => void;
   availableTags: { [K in TagCategoryKey]: string[] };
+  dynamicallyAvailableTags: { [K in TagCategoryKey]: Set<string> };
   filteredParts: ComboPart[];
   displayedParts: ComboPart[];
   onPartAdd: (part: ComboPart, event: React.MouseEvent<HTMLDivElement>) => void;
@@ -36,6 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   tags,
   handleTagClick,
   availableTags,
+  dynamicallyAvailableTags,
   filteredParts,
   displayedParts,
   onPartAdd,
@@ -116,13 +118,49 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     const categoryKey = key as TagCategoryKey;
                     const tagsForCategory = availableTags[categoryKey];
                     if (!tagsForCategory || tagsForCategory.length === 0) return null;
+                    
+                    const activeFiltersForCategory = Object.keys(tags[categoryKey]).length > 0;
+
+                    const visibleTags = tagsForCategory.filter(tag => {
+                      const isSelected = tags[categoryKey][tag] !== undefined;
+                      const isAvailable = dynamicallyAvailableTags[categoryKey].has(tag);
+                      // 表示条件：
+                      // 1. タグが選択されている場合 (解除できるようにするため)
+                      // 2. このカテゴリにアクティブなフィルターがない場合（すべてのタグを表示）
+                      // 3. このカテゴリにアクティブなフィルターがあるが、このタグが利用可能な場合
+                      return isSelected || !activeFiltersForCategory || isAvailable;
+                    });
+
+                    // カテゴリ自体を表示する必要があるかどうかの最終チェック
+                    if (visibleTags.length === 0 && activeFiltersForCategory) {
+                      return null;
+                    }
+
+
                     return (
                       <div key={key} className="tag-category">
                         <h4>{name}</h4>
                         <div className="tag-buttons">
-                          {tagsForCategory.map(tag => (
-                            <button key={tag} className={`tag-filter-button ${tags[categoryKey].has(tag) ? 'active' : ''}`} onClick={() => handleTagClick(categoryKey, tag)}>{tag}</button>
-                          ))}
+                          {tagsForCategory.map(tag => {
+                            const tagState = tags[categoryKey][tag];
+                            const isAvailable = dynamicallyAvailableTags[categoryKey].has(tag);
+                            const isSelected = tagState !== undefined;
+
+                            if (!isSelected && !isAvailable && Object.values(tags).some(cat => Object.keys(cat).length > 0)) {
+                              return null;
+                            }
+
+                            const buttonClass = `tag-filter-button ${tagState ? `active ${tagState}` : ''}`;
+                            return (
+                              <button
+                                key={tag}
+                                className={buttonClass}
+                                onClick={() => handleTagClick(categoryKey, tag)}
+                              >
+                                {tag}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     )

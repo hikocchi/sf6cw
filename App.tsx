@@ -24,7 +24,7 @@ export const App = () => {
   
   const { isMobileView } = useDeviceState();
   const { comboParts, sampleCombos, specialMoves, uniqueMoves, isLoading } = useCharacterData(character);
-  const { tags, handleTagClick, resetFilters, availableTags, filteredParts } = useFilters(comboParts);
+  const { tags, handleTagClick, resetFilters, availableTags, filteredParts, dynamicallyAvailableTags } = useFilters(comboParts);
   const { sequence, setSequence, addPartToSequence, removeFromSequence, clearSequence, loadSampleCombo, comboStats } = useSequence();
   const { refs: playerRefs, state: playerState, actions: playerActions } = useVideoPlayer(sequence);
   const reorder = useSequenceReorder(sequence, setSequence);
@@ -282,6 +282,7 @@ ${url.toString()}
           tags={tags}
           handleTagClick={handleTagClick}
           availableTags={availableTags}
+          dynamicallyAvailableTags={dynamicallyAvailableTags}
           filteredParts={filteredParts}
           displayedParts={displayedParts}
           onPartAdd={handleAddPart}

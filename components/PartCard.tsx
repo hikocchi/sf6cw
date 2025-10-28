@@ -5,7 +5,6 @@ import './PartCard.css';
 export const PartCard: React.FC<{ part: ComboPart; onPartClick: (part: ComboPart, event: React.MouseEvent<HTMLDivElement>) => void; }> = ({ part, onPartClick }) => {
   const partTags = [
     part.tagType,
-    part.startCondition,
     ...(part.tagCondition || []),
     part.tagDriveGauge && `D: ${part.tagDriveGauge}`,
     part.tagSaGauge && `SA: ${part.tagSaGauge}`

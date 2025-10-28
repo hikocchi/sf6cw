@@ -7,7 +7,6 @@ export const REWIND_SECONDS = 5;
 export const TAG_CATEGORIES = {
   tagType: '種類',
   tagCondition: '条件',
-  startCondition: '開始条件',
   tagDriveGauge: 'Dゲージ',
   tagSaGauge: 'SAゲージ'
 } as const;

@@ -1,6 +1,6 @@
 import type { ComboPart, SpecialMove, UniqueMove } from '../types';
 
-export const ryuSpecialMoves: SpecialMove[] = [
+export const specialMoves: SpecialMove[] = [
   // Specials
   { name: '弱 波動拳', notation: '弱波動拳', driveCost: 0, saCost: 0, type: 'special' },
   { name: '中 波動拳', notation: '中波動拳', driveCost: 0, saCost: 0, type: 'special' },
@@ -32,9 +32,9 @@ export const ryuSpecialMoves: SpecialMove[] = [
   { name: 'CA 真・昇龍拳', notation: 'CA真・昇龍拳', driveCost: 0, saCost: 3, type: 'sa' },
 ];
 
-export const ryuUniqueMoves: UniqueMove[] = [];
+export const uniqueMoves: UniqueMove[] = [];
 
-export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
+export const comboParts: Omit<ComboPart, 'character'>[] = [
   // --- 始動 (Starters) ---
   {
     id: 'ryu-001',
@@ -44,9 +44,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 100,
     damage: 1590,
     endFrameAdvantage: 37,
-    endTime: 3.0,
+    videoTime: [0, 3.0],
     tagType: '始動',
-   startCondition: '+37F状況',
+    tagCondition: ['+37F状況'],
   },
   {
     id: 'ryu-005',
@@ -56,9 +56,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 110,
     damage: 2230,
     endFrameAdvantage: 37,
-    endTime: 3.0,
+    videoTime: [0, 3.0],
     tagType: '始動',
-   startCondition: '+37F状況',
+    tagCondition: ['+37F状況'],
     tagDriveGauge: '3',
   },
   {
@@ -69,10 +69,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 120,
     damage: 2250,
     endFrameAdvantage: 37,
-    endTime: 3.6,
+    videoTime: [0, 3.6],
     tagType: '始動',
-    tagCondition: ['カウンター始動'],
-   startCondition: '+37F状況',
+    tagCondition: ['カウンター始動', '+37F状況'],
     tagDriveGauge: '2',
   },
   {
@@ -108,10 +107,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 150,
     damage: 2840,
     endFrameAdvantage: 37,
-    endTime: 3.8,
+    videoTime: [0, 3.8],
     tagType: '始動',
-    tagCondition: ['画面端','ドライブインパクト始動'],
-    startCondition: '+37F状況',
+    tagCondition: ['画面端','ドライブインパクト始動', '+37F状況'],
   },
   {
     id: 'ryu-009',
@@ -121,9 +119,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 160,
     damage: 3070,
     endFrameAdvantage: 37,
-    endTime: 4.4,
+    videoTime: [0, 4.4],
     tagType: '始動',
-    startCondition: '+37F状況',
+    tagCondition: ['+37F状況'],
     tagDriveGauge: '2',
   },
   {
@@ -134,10 +132,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 170,
     damage: 3170,
     endFrameAdvantage: 37,
-    endTime: 5.7,
+    videoTime: [0, 5.7],
     tagType: '始動',
-    tagCondition: ['ドライブインパクト始動','パニカン始動'],
-    startCondition: '+37F状況',
+    tagCondition: ['ドライブインパクト始動','パニカン始動', '+37F状況'],
     tagDriveGauge: '2',
   },
   {
@@ -148,10 +145,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 180,
     damage: 3190,
     endFrameAdvantage: 37,
-    endTime: 4.0,
+    videoTime: [0, 4.0],
     tagType: '始動',
-    tagCondition: ['パニカン始動'],
-    startCondition: '+37F状況',
+    tagCondition: ['パニカン始動', '+37F状況'],
     tagDriveGauge: '2',
   },
   {
@@ -162,10 +158,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 190,
     damage: 3300,
     endFrameAdvantage: 37,
-    endTime: 3.7,
+    videoTime: [0, 3.7],
     tagType: '始動',
-    tagCondition: ['画面端', 'パニカン始動'],
-    startCondition: '+37F状況',
+    tagCondition: ['画面端', 'パニカン始動', '+37F状況'],
     tagDriveGauge: '2',
   },
   {
@@ -176,7 +171,7 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 200,
     damage: 3320,
     endFrameAdvantage: 38,
-    endTime: 6.0,
+    videoTime: [0, 6.0],
     tagType: '始動',
     tagCondition: ['画面端','ドライブインパクト始動','パニカン始動'],
     tagDriveGauge: '2',
@@ -189,10 +184,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 210,
     damage: 3370,
     endFrameAdvantage: 37,
-    endTime: 3.1,
+    videoTime: [0, 3.1],
     tagType: '始動',
-    tagCondition: ['画面端'],
-    startCondition: '+37F状況',
+    tagCondition: ['画面端', '+37F状況'],
     tagDriveGauge: '2',
   },
   {
@@ -203,10 +197,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 220,
     damage: 3440,
     endFrameAdvantage: 37,
-    endTime: 5.6,
+    videoTime: [0, 5.6],
     tagType: '始動',
-    tagCondition: ['画面端','電刃練気'],
-    startCondition: '+37F状況',
+    tagCondition: ['画面端','電刃練気', '+37F状況'],
     tagDriveGauge: '2',
   },
   {
@@ -217,10 +210,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 230,
     damage: 3550,
     endFrameAdvantage: 37,
-    endTime: 4.2,
+    videoTime: [0, 4.2],
     tagType: '始動',
-    tagCondition: ['画面中央','パニカン始動'],
-    startCondition: '+37F状況',
+    tagCondition: ['画面中央','パニカン始動', '+37F状況'],
     tagDriveGauge: '2',
   },
   {
@@ -231,7 +223,7 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 240,
     damage: 3660,
     endFrameAdvantage: 39,
-    endTime: 3.6,
+    videoTime: [0, 3.6],
     tagType: '始動',
     tagCondition: ['画面端','パニカン始動'],
     tagDriveGauge: '2',
@@ -244,7 +236,7 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 250,
     damage: 3760,
     endFrameAdvantage: 32,
-    endTime: 3.5,
+    videoTime: [0, 3.5],
     tagType: '始動',
     tagCondition: ['画面端','パニカン始動'],
   },
@@ -256,10 +248,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 260,
     damage: 4388,
     endFrameAdvantage: 37,
-    endTime: 9.9,
+    videoTime: [0, 9.9],
     tagType: '始動',
-    tagCondition: ['画面端','スタン始動'],
-    startCondition: '+37F状況',
+    tagCondition: ['画面端','スタン始動', '+37F状況'],
     tagDriveGauge: '1',
     tagSaGauge: '2',
   },
@@ -271,10 +262,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 270,
     damage: 5728,
     endFrameAdvantage: 37,
-    endTime: 7.2,
+    videoTime: [0, 7.2],
     tagType: '始動',
-    tagCondition: ['画面端','パニカン始動'],
-    startCondition: '+37F状況',
+    tagCondition: ['画面端','パニカン始動', '+37F状況'],
     tagDriveGauge: '1',
     tagSaGauge: '2',
   },
@@ -314,9 +304,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 500,
     damage: 1200,
     endFrameAdvantage: 17,
-    startTime: 0.3,
+    videoTime: [0.3],
     tagType: '起き攻め',
-    startCondition: '+37F状況',
+    tagCondition: ['+37F状況'],
   },
   {
     id: 'ryu-034',
@@ -327,8 +317,7 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     damage: 1200,
     endFrameAdvantage: 17,
     tagType: '起き攻め',
-    startCondition: '+37F状況',
-    tagCondition: ['画面端'],
+    tagCondition: ['+37F状況', '画面端'],
   },
   {
     id: 'ryu-043',
@@ -338,11 +327,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 520,
     damage: 1200,
     endFrameAdvantage: 17,
-    startTime: 2.2,
-    endTime: 5.1,
+    videoTime: [2.2, 5.1],
     tagType: '起き攻め',
-    tagCondition: ['画面端'],
-    startCondition: '+32F状況',
+    tagCondition: ['画面端', '+32F状況'],
   },
   {
     id: 'ryu-045',
@@ -352,10 +339,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 530,
     damage: 1200,
     endFrameAdvantage: 17,
-    endTime: 5.8,
+    videoTime: [0, 5.8],
     tagType: '起き攻め',
-    tagCondition: ['画面端'],
-    startCondition: '+17F状況',
+    tagCondition: ['画面端', '+17F状況'],
   },
   {
     id: 'ryu-032',
@@ -365,10 +351,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 540,
     damage: 1720,
     endFrameAdvantage: 37,
-    endTime: 2.8,
+    videoTime: [0, 2.8],
     tagType: '起き攻め',
-    startCondition: '+37F状況',
-    tagCondition: ['画面端'],
+    tagCondition: ['+37F状況', '画面端'],
   },
   {
     id: 'ryu-003',
@@ -378,9 +363,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 550,
     damage: 2610,
     endFrameAdvantage: 37,
-    startTime: 0.8,
+    videoTime: [0.8],
     tagType: '起き攻め',
-    startCondition: '+37F状況',
+    tagCondition: ['+37F状況'],
     tagDriveGauge: '2',
   },
   {
@@ -391,10 +376,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 560,
     damage: 3280,
     endFrameAdvantage: 32,
-    endTime: 3.8,
+    videoTime: [0, 3.8],
     tagType: '起き攻め',
-    startCondition: '+37F状況',
-    tagCondition: ['画面端'],
+    tagCondition: ['+37F状況', '画面端'],
   },
   {
     id: 'ryu-035',
@@ -405,8 +389,7 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     damage: 3280,
     endFrameAdvantage: 32,
     tagType: '起き攻め',
-    startCondition: '+37F状況',
-    tagCondition: ['画面端'],
+    tagCondition: ['+37F状況', '画面端'],
   },
   {
     id: 'ryu-044',
@@ -416,10 +399,9 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
     order: 580,
     damage: 3400,
     endFrameAdvantage: 32,
-    endTime: 3.7,
+    videoTime: [0, 3.7],
     tagType: '起き攻め',
-    tagCondition: ['画面端'],
-    startCondition: '+32F状況',
+    tagCondition: ['画面端', '+32F状況'],
   },
 
   // --- リーサル (Lethal) ---
@@ -579,7 +561,7 @@ export const ryuComboParts: Omit<ComboPart, 'character'>[] = [
   },
 ];
 
-export const ryuSampleCombos = [
+export const sampleCombos = [
   {
     name: '画面中央 基本',
     parts: ['ryu-001', 'ryu-002'],

@@ -1,6 +1,6 @@
 import type { ComboPart, SpecialMove, UniqueMove } from '../types';
 
-export const kenSpecialMoves: SpecialMove[] = [
+export const specialMoves: SpecialMove[] = [
   // Specials
   { name: '弱 波動拳', notation: '弱波動', driveCost: 0, saCost: 0, type: 'special' },
   { name: '中 波動拳', notation: '中波動', driveCost: 0, saCost: 0, type: 'special' },
@@ -39,7 +39,7 @@ export const kenSpecialMoves: SpecialMove[] = [
   { name: 'CA 神龍裂破', notation: 'CA', driveCost: 0, saCost: 3, type: 'sa' },
 ];
 
-export const kenUniqueMoves: UniqueMove[] = [
+export const uniqueMoves: UniqueMove[] = [
   // 奮迅脚 本体
   { name: '奮迅脚', notation: '奮迅脚', group: '奮迅脚' },
   // 奮迅脚 派生
@@ -52,7 +52,7 @@ export const kenUniqueMoves: UniqueMove[] = [
   { name: '奮迅龍尾', notation: '奮迅龍尾', group: '奮迅脚連携' },
 ];
 
-export const kenComboParts: Omit<ComboPart, 'character'>[] = [
+export const comboParts: Omit<ComboPart, 'character'>[] = [
   // --- 始動 (Starters) ---
   {
     // --- 基本情報 ---
@@ -67,8 +67,7 @@ export const kenComboParts: Omit<ComboPart, 'character'>[] = [
     damage: 1200,
     endFrameAdvantage: 20,
     tagType: '始動',
-    tagCondition: ['暴れ潰し'],
-    startCondition: '+20F状況',
+    tagCondition: ['暴れ潰し', '+20F状況'],
 
     // --- 動画情報 ---
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ken/ken-009.mp4',
@@ -86,8 +85,7 @@ export const kenComboParts: Omit<ComboPart, 'character'>[] = [
     damage: 1480,
     endFrameAdvantage: 25,
     tagType: '始動',
-    tagCondition: ['暴れ潰し'],
-    startCondition: '+25F状況',
+    tagCondition: ['暴れ潰し', '+25F状況'],
 
     // --- 動画情報 ---
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ken/ken-008.mp4',
@@ -105,8 +103,7 @@ export const kenComboParts: Omit<ComboPart, 'character'>[] = [
     damage: 1520,
     endFrameAdvantage: 43,
     tagType: '始動',
-    tagCondition: ['暴れ潰し'],
-    startCondition: '+43F状況',
+    tagCondition: ['暴れ潰し', '+43F状況'],
 
     // --- 動画情報 ---
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ken/ken-014.mp4',
@@ -124,8 +121,7 @@ export const kenComboParts: Omit<ComboPart, 'character'>[] = [
     damage: 1520,
     endFrameAdvantage: 5,
     tagType: '始動',
-    tagCondition: ['暴れ潰し'],
-    startCondition: '+5F状況',
+    tagCondition: ['暴れ潰し', '+5F状況'],
   
     // --- 動画情報 ---
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ken/ken-015.mp4',
@@ -143,8 +139,7 @@ export const kenComboParts: Omit<ComboPart, 'character'>[] = [
     damage: 2080,
     endFrameAdvantage: 26,
     tagType: '始動',
-    tagCondition: ['入れ替え'],
-    startCondition: '+26F状況',
+    tagCondition: ['入れ替え', '+26F状況'],
 
     // --- 動画情報 ---
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ken/ken-001.mp4',
@@ -162,8 +157,7 @@ export const kenComboParts: Omit<ComboPart, 'character'>[] = [
     damage: 2150,
     endFrameAdvantage: 24,
     tagType: '始動',
-    tagCondition: ['パニカン始動'],
-    startCondition: '+24F状況',
+    tagCondition: ['パニカン始動', '+24F状況'],
   
     // --- 動画情報 ---
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ken/ken-016.mp4',
@@ -181,8 +175,7 @@ export const kenComboParts: Omit<ComboPart, 'character'>[] = [
     damage: 2360,
     endFrameAdvantage: 33,
     tagType: '始動',
-    tagCondition: [],
-    startCondition: '+33F状況',
+    tagCondition: ['+33F状況'],
     tagDriveGauge: '3',
   
     // --- 動画情報 ---
@@ -201,8 +194,7 @@ export const kenComboParts: Omit<ComboPart, 'character'>[] = [
     damage: 2440,
     endFrameAdvantage: 33,
     tagType: '始動',
-    tagCondition: ['画面端', 'ドライブインパクト始動'],
-    startCondition: '+33F状況',
+    tagCondition: ['画面端', 'ドライブインパクト始動', '+33F状況'],
     tagDriveGauge: '1',
   
     // --- 動画情報 ---
@@ -221,8 +213,7 @@ export const kenComboParts: Omit<ComboPart, 'character'>[] = [
     damage: 2508,
     endFrameAdvantage: 33,
     tagType: '始動',
-    tagCondition: ['画面端', 'パニカン始動'],
-    startCondition: '+33F状況',
+    tagCondition: ['画面端', 'パニカン始動', '+33F状況'],
     tagDriveGauge: '1',
   
     // --- 動画情報 ---
@@ -241,7 +232,7 @@ export const kenComboParts: Omit<ComboPart, 'character'>[] = [
     damage: 2660,
     endFrameAdvantage: 20,
     tagType: '始動',
-    startCondition: '+20F状況',
+    tagCondition: ['+20F状況'],
   
     // --- 動画情報 ---
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ken/ken-002.mp4',
@@ -259,8 +250,7 @@ export const kenComboParts: Omit<ComboPart, 'character'>[] = [
     damage: 2720,
     endFrameAdvantage: 20,
     tagType: '始動',
-    tagCondition: ['暴れ潰し'],
-    startCondition: '+20F状況',
+    tagCondition: ['暴れ潰し', '+20F状況'],
     // --- 動画情報 ---
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ken/ken-013.mp4',
   },
@@ -277,8 +267,7 @@ export const kenComboParts: Omit<ComboPart, 'character'>[] = [
     damage: 2790,
     endFrameAdvantage: 24,
     tagType: '始動',
-    tagCondition: ['ドライブインパクト始動', 'パニカン始動'],
-    startCondition: '+24F状況',
+    tagCondition: ['ドライブインパクト始動', 'パニカン始動', '+24F状況'],
     tagDriveGauge: '1',
   
     // --- 動画情報 ---
@@ -297,8 +286,7 @@ export const kenComboParts: Omit<ComboPart, 'character'>[] = [
     damage: 2865,
     endFrameAdvantage: 33,
     tagType: '始動',
-    tagCondition: ['画面端', 'ドライブインパクト始動', 'パニカン始動','運び'],
-    startCondition: '+33F状況',
+    tagCondition: ['画面端', 'ドライブインパクト始動', 'パニカン始動','運び', '+33F状況'],
     tagDriveGauge: '2',
   
     // --- 動画情報 ---
@@ -319,8 +307,7 @@ export const kenComboParts: Omit<ComboPart, 'character'>[] = [
     damage: 3607,
     endFrameAdvantage: 15,
     tagType: 'リーサル',
-    tagCondition: ['入れ替え'],
-    startCondition: '+15F状況',
+    tagCondition: ['入れ替え', '+15F状況'],
     tagDriveGauge: '3',
     tagSaGauge: '3',
   
@@ -340,8 +327,7 @@ export const kenComboParts: Omit<ComboPart, 'character'>[] = [
     damage: 4563,
     endFrameAdvantage: 15,
     tagType: 'リーサル',
-    tagCondition: [],
-    startCondition: '+15F状況',
+    tagCondition: ['+15F状況'],
     tagDriveGauge: '6', 
     tagSaGauge: '3',
   
@@ -361,8 +347,7 @@ export const kenComboParts: Omit<ComboPart, 'character'>[] = [
     damage: 4878,
     endFrameAdvantage: 15,
     tagType: 'リーサル',
-    tagCondition: ['入れ替え'],
-    startCondition: '+15F状況',
+    tagCondition: ['入れ替え', '+15F状況'],
     tagDriveGauge: '6',
     tagSaGauge: '3',
   
@@ -371,7 +356,7 @@ export const kenComboParts: Omit<ComboPart, 'character'>[] = [
   },
 ];
 
-export const kenSampleCombos = [
+export const sampleCombos = [
   {
     name: '画面中央 基本',
     parts: ['ken-003'],

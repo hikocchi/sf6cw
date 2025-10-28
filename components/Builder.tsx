@@ -13,7 +13,12 @@ interface BuilderProps {
   sequenceListRef: React.RefObject<HTMLDivElement>;
   reorder: any;
   handleRemovePart: (id: string) => void;
-  comboStats: { totalDamage: number; finalFrameAdvantage: number | undefined; };
+  comboStats: { 
+    totalDamage: number; 
+    finalFrameAdvantage: number | undefined;
+    totalDriveCost: number;
+    totalSaCost: number;
+  };
   handlePlayPauseToggle: () => void;
   handleShare: () => void;
   showCopyFeedback: boolean;
@@ -134,6 +139,12 @@ export const Builder: React.FC<BuilderProps> = ({
                   <span className={`info-item frame-advantage ${comboStats.finalFrameAdvantage >= 0 ? 'positive' : 'negative'}`}>
                     ⏰ Final Frames: {comboStats.finalFrameAdvantage > 0 ? `+${comboStats.finalFrameAdvantage}` : comboStats.finalFrameAdvantage}
                   </span>
+                )}
+                 {comboStats.totalDriveCost > 0 && (
+                  <span className="info-item drive-cost">💧 Drive Used: {comboStats.totalDriveCost}</span>
+                )}
+                {comboStats.totalSaCost > 0 && (
+                  <span className="info-item sa-cost">🔥 SA Used: {comboStats.totalSaCost}</span>
                 )}
               </div>
             )}

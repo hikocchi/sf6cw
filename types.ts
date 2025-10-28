@@ -8,10 +8,8 @@ export interface ComboPart {
   order: number;
   damage?: number;
   endFrameAdvantage?: number;
-  startTime?: number;
-  endTime?: number;
+  videoTime?: number[];
   tagType?: string;
-  startCondition?: string;
   tagCondition?: string[];
   tagDriveGauge?: string;
   tagSaGauge?: string;
@@ -34,6 +32,11 @@ export interface FavoriteCombo {
 }
 
 export type TagCategoryKey = keyof typeof import('./constants').TAG_CATEGORIES;
+
+export type TagState = 'include';
+export type FilterState = {
+  [K in TagCategoryKey]: { [tag: string]: TagState };
+};
 
 export interface SpecialMove {
   name: string; // 表示名 e.g., "OD波動拳"

@@ -1,6 +1,6 @@
 import type { ComboPart } from '../types';
 
-export const chunliComboParts: Omit<ComboPart, 'character'>[] = [
+export const comboParts: Omit<ComboPart, 'character'>[] = [
   {
     id: 'chun-li-001',
     name: 'chun-li-001',

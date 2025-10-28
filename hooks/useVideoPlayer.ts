@@ -42,7 +42,7 @@ export const useVideoPlayer = (sequence: SequencePart[]) => {
   const rewindSequence = () => {
     if (currentPlayingIndex === null) return;
     const currentPart = sequence[currentPlayingIndex];
-    const startTime = currentPart.startTime || 0;
+    const startTime = currentPart.videoTime?.[0] || 0;
     const isYouTube = currentPart.videoUrl.includes('youtube.com');
     if (isYouTube && ytPlayerRef.current) {
       const newTime = Math.max(startTime, ytPlayerRef.current.getCurrentTime() - REWIND_SECONDS);
@@ -91,19 +91,21 @@ export const useVideoPlayer = (sequence: SequencePart[]) => {
     const currentPart = sequence[currentPlayingIndex];
     if (!currentPart) return;
     
+    const startTime = currentPart.videoTime?.[0] || 0;
+    const endTime = currentPart.videoTime?.[1];
     const isLastPartInSequence = currentPlayingIndex === sequence.length - 1;
-    const shouldCheckEndTime = currentPart.endTime && !isLastPartInSequence;
+    const shouldCheckEndTime = endTime !== undefined && !isLastPartInSequence;
 
     const videoElement = videoRef.current;
 
     const onLoadedMetadata = () => {
       if (videoElement) {
-          if (currentPart.startTime) videoElement.currentTime = currentPart.startTime;
+          videoElement.currentTime = startTime;
           videoElement.play().catch(e => console.error("Video play failed:", e));
       }
     };
     const handleTimeUpdate = () => {
-      if (videoElement && shouldCheckEndTime && videoElement.currentTime >= currentPart.endTime!) handleVideoEnded();
+      if (videoElement && shouldCheckEndTime && videoElement.currentTime >= endTime!) handleVideoEnded();
     };
 
     if (isCurrentVideoYouTube) {
@@ -112,12 +114,21 @@ export const useVideoPlayer = (sequence: SequencePart[]) => {
         if (videoId) {
           ytPlayerRef.current = new window.YT.Player(ytPlayerContainerRef.current.id, {
             height: '100%', width: '100%', videoId,
-            playerVars: { 'autoplay': 1, 'controls': 1, 'playsinline': 1, 'start': Math.floor(currentPart.startTime || 0) },
+            playerVars: { 'autoplay': 1, 'controls': 1, 'playsinline': 1, 'start': Math.floor(startTime) },
             events: {
               'onStateChange': (event: any) => {
+                // 状態が変化するたびに、まず既存のタイマーをクリア
+                if (ytTimeCheckIntervalRef.current) {
+                  clearInterval(ytTimeCheckIntervalRef.current);
+                  ytTimeCheckIntervalRef.current = null;
+                }
+                
+                // 再生が開始され、終了時間チェックが必要な場合に新しいタイマーをセット
                 if (event.data === window.YT.PlayerState.PLAYING && shouldCheckEndTime) {
                   ytTimeCheckIntervalRef.current = window.setInterval(() => {
-                    if (ytPlayerRef.current?.getCurrentTime() >= currentPart.endTime!) handleVideoEnded();
+                    if (ytPlayerRef.current?.getCurrentTime() >= endTime!) {
+                      handleVideoEnded();
+                    }
                   }, 100);
                 } else if (event.data === window.YT.PlayerState.ENDED) {
                   handleVideoEnded();

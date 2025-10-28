@@ -39,7 +39,6 @@ export const PartPickerModal: React.FC<{
   const getPartTags = (part: ComboPart) => {
     return [
       part.tagType,
-      part.startCondition,
       ...(part.tagCondition || []),
       part.tagDriveGauge && `D: ${part.tagDriveGauge}`,
       part.tagSaGauge && `SA: ${part.tagSaGauge}`

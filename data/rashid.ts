@@ -1,6 +1,6 @@
 import type { ComboPart, SpecialMove, UniqueMove } from '../types';
 
-export const rashidSpecialMoves: SpecialMove[] = [
+export const specialMoves: SpecialMove[] = [
   // Specials
   { name: '弱 ワールウィンド・ショット', notation: '弱ワール', driveCost: 0, saCost: 0, type: 'special' },
   { name: '中 ワールウィンド・ショット', notation: '中ワール', driveCost: 0, saCost: 0, type: 'special' },
@@ -27,9 +27,9 @@ export const rashidSpecialMoves: SpecialMove[] = [
   { name: 'CA アルトair', notation: 'CA', driveCost: 0, saCost: 3, type: 'sa' },
 ];
 
-export const rashidUniqueMoves: UniqueMove[] = [];
+export const uniqueMoves: UniqueMove[] = [];
 
-export const rashidComboParts: Omit<ComboPart, 'character'>[] = [
+export const comboParts: Omit<ComboPart, 'character'>[] = [
   {
     id: 'rashid-001',
     order: 10,
@@ -205,7 +205,7 @@ export const rashidComboParts: Omit<ComboPart, 'character'>[] = [
     tagType: '連携',
     tagDriveGauge: '3',
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/rashid/rashid-016.mp4',
-    startCondition:'+3F状況'
+    tagCondition:['+3F状況']
   },
   {
     id: 'rashid-017',
@@ -264,7 +264,7 @@ export const rashidComboParts: Omit<ComboPart, 'character'>[] = [
   },
 ];
 
-export const rashidSampleCombos = [
+export const sampleCombos = [
   {
     name: '基本コンボ',
     parts: ['rashid-002'],

@@ -26,8 +26,10 @@ export const useSequence = () => {
 
   const comboStats = useMemo(() => {
     const totalDamage = sequence.reduce((sum, part) => sum + (part.damage || 0), 0);
+    const totalDriveCost = sequence.reduce((sum, part) => sum + parseInt(part.tagDriveGauge || '0', 10), 0);
+    const totalSaCost = sequence.reduce((sum, part) => sum + parseInt(part.tagSaGauge || '0', 10), 0);
     const finalFrameAdvantage = sequence.length > 0 ? sequence[sequence.length - 1].endFrameAdvantage : undefined;
-    return { totalDamage, finalFrameAdvantage };
+    return { totalDamage, finalFrameAdvantage, totalDriveCost, totalSaCost };
   }, [sequence]);
 
   return { sequence, setSequence, addPartToSequence, removeFromSequence, clearSequence, loadSampleCombo, comboStats };
