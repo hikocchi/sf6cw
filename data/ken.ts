@@ -1,55 +1,118 @@
-import type { ComboPart, SpecialMove, UniqueMove } from '../types';
+import type { ComboPart, Move } from '../types';
 
-export const specialMoves: SpecialMove[] = [
+export const moves: Move[] = [
   // Specials
-  { name: '弱 波動拳', notation: '弱波動', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '中 波動拳', notation: '中波動', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '強 波動拳', notation: '強波動', driveCost: 0, saCost: 0, type: 'special' },
-  { name: 'OD 波動拳', notation: 'OD波動', driveCost: 2, saCost: 0, type: 'special' },
-
-  { name: '弱 昇竜拳', notation: '弱昇竜', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '中 昇竜拳', notation: '中昇竜', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '強 昇竜拳', notation: '強昇竜', driveCost: 0, saCost: 0, type: 'special' },
-  { name: 'OD 昇竜拳', notation: 'OD昇竜', driveCost: 2, saCost: 0, type: 'special' },
-
-  { name: '弱 竜巻旋風脚', notation: '弱竜巻', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '中 竜巻旋風脚', notation: '中竜巻', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '強 竜巻旋風脚', notation: '強竜巻', driveCost: 0, saCost: 0, type: 'special' },
-  { name: 'OD 竜巻旋風脚', notation: 'OD竜巻', driveCost: 2, saCost: 0, type: 'special' },
-  
-  { name: '弱 龍尾脚', notation: '弱龍尾', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '中 龍尾脚', notation: '中龍尾', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '強 龍尾脚', notation: '強龍尾', driveCost: 0, saCost: 0, type: 'special' },
-
-  { name: '弱 迅雷脚', notation: '弱迅雷', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '中 迅雷脚', notation: '中迅雷', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '強 迅雷脚', notation: '強迅雷', driveCost: 0, saCost: 0, type: 'special' },
-  { name: 'OD 迅雷脚', notation: 'OD迅雷', driveCost: 2, saCost: 0, type: 'special' },
-
-  { name: '弱 迅雷脚派生', notation: '弱迅雷派生', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '中 迅雷脚派生', notation: '中迅雷派生', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '強 迅雷脚派生', notation: '強迅雷派生', driveCost: 0, saCost: 0, type: 'special' },
-
-  { name: 'OD 迅雷脚派生派生', notation: 'OD迅雷派生派生', driveCost: 0, saCost: 0, type: 'special' },
-
+  {
+    id: '001',
+    name: '波動拳',
+    type: 'special',
+    variants: [
+      { label: '弱', notation: '弱波動', driveCost: 0, saCost: 0 },
+      { label: '中', notation: '中波動', driveCost: 0, saCost: 0 },
+      { label: '強', notation: '強波動', driveCost: 0, saCost: 0 },
+      { label: 'OD', notation: 'OD波動', driveCost: 2, saCost: 0 },
+    ],
+  },
+  {
+    id: '002',
+    name: '昇竜拳',
+    type: 'special',
+    variants: [
+      { label: '弱', notation: '弱昇竜', driveCost: 0, saCost: 0 },
+      { label: '中', notation: '中昇竜', driveCost: 0, saCost: 0 },
+      { label: '強', notation: '強昇竜', driveCost: 0, saCost: 0 },
+      { label: 'OD', notation: 'OD昇竜', driveCost: 2, saCost: 0 },
+    ],
+  },
+  {
+    id: '003',
+    name: '竜巻旋風脚',
+    type: 'special',
+    variants: [
+      { label: '弱', notation: '弱竜巻', driveCost: 0, saCost: 0 },
+      { label: '中', notation: '中竜巻', driveCost: 0, saCost: 0 },
+      { label: '強', notation: '強竜巻', driveCost: 0, saCost: 0 },
+      { label: 'OD', notation: 'OD竜巻', driveCost: 2, saCost: 0 },
+    ],
+  },
+  {
+    id: '004',
+    name: '龍尾脚',
+    type: 'special',
+    variants: [
+      { label: '弱', notation: '弱龍尾', driveCost: 0, saCost: 0 },
+      { label: '中', notation: '中龍尾', driveCost: 0, saCost: 0 },
+      { label: '強', notation: '強龍尾', driveCost: 0, saCost: 0 },
+    ],
+  },
+  {
+    id: '005',
+    name: '迅雷脚',
+    type: 'unique',
+    variantGroups: [
+      {
+        groupName: '迅雷脚',
+        variants: [
+          { label: '弱', notation: '弱迅雷', driveCost: 0, saCost: 0 },
+          { label: '中', notation: '中迅雷', driveCost: 0, saCost: 0 },
+          { label: '強', notation: '強迅雷', driveCost: 0, saCost: 0 },
+          { label: 'OD', notation: 'OD迅雷', driveCost: 2, saCost: 0 },
+        ],
+      },
+      {
+        groupName: '派生(壱)',
+        variants: [
+          { label: '弱', notation: '弱迅雷派生', driveCost: 0, saCost: 0 },
+          { label: '中', notation: '中迅雷派生', driveCost: 0, saCost: 0 },
+          { label: '強', notation: '強迅雷派生', driveCost: 0, saCost: 0 },
+        ],
+      },
+      {
+        groupName: '派生(弐)',
+        variants: [{ label: 'OD派生', notation: 'OD迅雷派生', driveCost: 0, saCost: 0 }],
+      },
+    ],
+  },
+  // Uniques
+  {
+    id: '006',
+    name: '奮迅脚',
+    type: 'unique',
+    variantGroups: [
+      {
+        groupName: '奮迅脚',
+        variants: [{ label: '奮迅脚', notation: '奮迅脚' }],
+      },
+      {
+        groupName: '派生',
+        variants: [
+          { label: '急停止', notation: '奮迅急停止' },
+          { label: 'カカト', notation: '奮迅カカト' },
+          { label: '前蹴り', notation: '奮迅前蹴り' },
+        ],
+      },
+      {
+        groupName: '連携',
+        variants: [
+          { label: '竜巻', notation: '奮迅竜巻' },
+          { label: '昇竜', notation: '奮迅昇竜' },
+          { label: '龍尾', notation: '奮迅龍尾' },
+        ],
+      },
+    ],
+  },
   // Super Arts
-  { name: 'SA1 龍尾烈脚', notation: 'SA1', driveCost: 0, saCost: 1, type: 'sa' },
-  { name: 'SA2 疾風迅雷脚', notation: 'SA2', driveCost: 0, saCost: 2, type: 'sa' },
-  { name: 'SA3 神龍裂破', notation: 'SA3', driveCost: 0, saCost: 3, type: 'sa' },
-  { name: 'CA 神龍裂破', notation: 'CA', driveCost: 0, saCost: 3, type: 'sa' },
-];
-
-export const uniqueMoves: UniqueMove[] = [
-  // 奮迅脚 本体
-  { name: '奮迅脚', notation: '奮迅脚', group: '奮迅脚' },
-  // 奮迅脚 派生
-  { name: '急停止', notation: '奮迅急停止', group: '奮迅脚派生' },
-  { name: 'カカト', notation: '奮迅カカト', group: '奮迅脚派生' },
-  { name: '前蹴り', notation: '奮迅前蹴り', group: '奮迅脚派生' },
-  // 奮迅脚 連携
-  { name: '奮迅竜巻', notation: '奮迅竜巻', group: '奮迅脚連携' },
-  { name: '奮迅昇竜', notation: '奮迅昇竜', group: '奮迅脚連携' },
-  { name: '奮迅龍尾', notation: '奮迅龍尾', group: '奮迅脚連携' },
+  {
+    id: '007',
+    name: 'スーパーアーツ',
+    type: 'sa',
+    variants: [
+      { label: 'SA1', notation: 'SA1', driveCost: 0, saCost: 1 },
+      { label: 'SA2', notation: 'SA2', driveCost: 0, saCost: 2 },
+      { label: 'SA3', notation: 'SA3', driveCost: 0, saCost: 3 },
+      { label: 'CA', notation: 'CA', driveCost: 0, saCost: 3 },
+    ],
+  },
 ];
 
 export const comboParts: Omit<ComboPart, 'character'>[] = [
@@ -67,7 +130,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     damage: 1200,
     endFrameAdvantage: 20,
     tagType: '始動',
-    tagCondition: ['暴れ潰し', '+20F状況'],
+    tagCondition: ['暴れ潰し'],
 
     // --- 動画情報 ---
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ken/ken-009.mp4',
@@ -85,7 +148,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     damage: 1480,
     endFrameAdvantage: 25,
     tagType: '始動',
-    tagCondition: ['暴れ潰し', '+25F状況'],
+    tagCondition: ['暴れ潰し'],
 
     // --- 動画情報 ---
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ken/ken-008.mp4',
@@ -103,7 +166,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     damage: 1520,
     endFrameAdvantage: 43,
     tagType: '始動',
-    tagCondition: ['暴れ潰し', '+43F状況'],
+    tagCondition: ['暴れ潰し'],
 
     // --- 動画情報 ---
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ken/ken-014.mp4',
@@ -121,7 +184,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     damage: 1520,
     endFrameAdvantage: 5,
     tagType: '始動',
-    tagCondition: ['暴れ潰し', '+5F状況'],
+    tagCondition: ['暴れ潰し'],
   
     // --- 動画情報 ---
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ken/ken-015.mp4',
@@ -139,7 +202,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     damage: 2080,
     endFrameAdvantage: 26,
     tagType: '始動',
-    tagCondition: ['入れ替え', '+26F状況'],
+    tagCondition: ['入れ替え'],
 
     // --- 動画情報 ---
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ken/ken-001.mp4',
@@ -157,7 +220,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     damage: 2150,
     endFrameAdvantage: 24,
     tagType: '始動',
-    tagCondition: ['パニカン始動', '+24F状況'],
+    tagCondition: ['パニカン始動'],
   
     // --- 動画情報 ---
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ken/ken-016.mp4',
@@ -175,7 +238,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     damage: 2360,
     endFrameAdvantage: 33,
     tagType: '始動',
-    tagCondition: ['+33F状況'],
+    tagCondition: [],
     tagDriveGauge: '3',
   
     // --- 動画情報 ---
@@ -194,7 +257,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     damage: 2440,
     endFrameAdvantage: 33,
     tagType: '始動',
-    tagCondition: ['画面端', 'ドライブインパクト始動', '+33F状況'],
+    tagCondition: ['画面端', 'ドライブインパクト始動'],
     tagDriveGauge: '1',
   
     // --- 動画情報 ---
@@ -213,7 +276,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     damage: 2508,
     endFrameAdvantage: 33,
     tagType: '始動',
-    tagCondition: ['画面端', 'パニカン始動', '+33F状況'],
+    tagCondition: ['画面端', 'パニカン始動'],
     tagDriveGauge: '1',
   
     // --- 動画情報 ---
@@ -232,7 +295,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     damage: 2660,
     endFrameAdvantage: 20,
     tagType: '始動',
-    tagCondition: ['+20F状況'],
+    tagCondition: [],
   
     // --- 動画情報 ---
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ken/ken-002.mp4',
@@ -250,7 +313,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     damage: 2720,
     endFrameAdvantage: 20,
     tagType: '始動',
-    tagCondition: ['暴れ潰し', '+20F状況'],
+    tagCondition: ['暴れ潰し'],
     // --- 動画情報 ---
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ken/ken-013.mp4',
   },
@@ -267,7 +330,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     damage: 2790,
     endFrameAdvantage: 24,
     tagType: '始動',
-    tagCondition: ['ドライブインパクト始動', 'パニカン始動', '+24F状況'],
+    tagCondition: ['ドライブインパクト始動', 'パニカン始動'],
     tagDriveGauge: '1',
   
     // --- 動画情報 ---
@@ -286,7 +349,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     damage: 2865,
     endFrameAdvantage: 33,
     tagType: '始動',
-    tagCondition: ['画面端', 'ドライブインパクト始動', 'パニカン始動','運び', '+33F状況'],
+    tagCondition: ['画面端', 'ドライブインパクト始動', 'パニカン始動','運び'],
     tagDriveGauge: '2',
   
     // --- 動画情報 ---
@@ -307,7 +370,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     damage: 3607,
     endFrameAdvantage: 15,
     tagType: 'リーサル',
-    tagCondition: ['入れ替え', '+15F状況'],
+    tagCondition: ['入れ替え'],
     tagDriveGauge: '3',
     tagSaGauge: '3',
   
@@ -327,7 +390,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     damage: 4563,
     endFrameAdvantage: 15,
     tagType: 'リーサル',
-    tagCondition: ['+15F状況'],
+    tagCondition: [],
     tagDriveGauge: '6', 
     tagSaGauge: '3',
   
@@ -347,7 +410,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     damage: 4878,
     endFrameAdvantage: 15,
     tagType: 'リーサル',
-    tagCondition: ['入れ替え', '+15F状況'],
+    tagCondition: ['入れ替え'],
     tagDriveGauge: '6',
     tagSaGauge: '3',
   

@@ -53,8 +53,9 @@
 
 .vcb-feedback {
   position: absolute;
-  bottom: 110%;
+  top: 100%;
   right: 0;
+  margin-top: 8px;
   background-color: var(--positive-color);
   color: #000;
   padding: 0.5rem 1rem;
@@ -62,10 +63,11 @@
   font-size: 0.9rem;
   font-weight: 500;
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(-10px);
   transition: opacity 0.3s ease, transform 0.3s ease;
   pointer-events: none;
   white-space: nowrap;
+  z-index: 10;
 }
 .vcb-feedback.visible {
   opacity: 1;
@@ -240,7 +242,7 @@
 
 .vcb-specials-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 1rem;
 }
 
@@ -262,6 +264,23 @@
   padding-bottom: 0.5rem;
 }
 
+.vcb-unique-move-group {
+  grid-column: span 2; /* Make unique move groups wider if needed */
+}
+
+.vcb-unique-move-group-title {
+  text-align: center;
+  color: var(--primary-color);
+}
+
+.vcb-variant-group-name {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: var(--text-secondary-color);
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
 .vcb-strength-buttons {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -269,11 +288,11 @@
 }
 
 .vcb-sa-buttons {
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
 }
 
 .vcb-sa-palette-content > .vcb-move-group {
-  max-width: 50%;
+  max-width: 100%;
 }
 
 .vcb-strength-buttons button {
@@ -285,6 +304,9 @@
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .vcb-strength-buttons button:hover {

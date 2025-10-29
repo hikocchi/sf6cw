@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { SequencePart, SpecialMove, UniqueMove } from '../types';
+import type { SequencePart, Move } from '../types';
 import { SequenceItem, DropIndicator } from './SequenceItem';
 import { PlayIcon, PauseIcon, RewindIcon, StopIcon, StarIcon, ShareIcon, ControllerIcon } from './Icons';
 import { VisualComboBuilder } from './VisualComboBuilder';
@@ -26,8 +26,7 @@ interface BuilderProps {
   handleClear: () => void;
   isMobileView: boolean;
   character: string;
-  specialMoves: SpecialMove[];
-  uniqueMoves: UniqueMove[];
+  moves: Move[];
 }
 
 
@@ -47,8 +46,7 @@ export const Builder: React.FC<BuilderProps> = ({
   handleClear,
   isMobileView,
   character,
-  specialMoves,
-  uniqueMoves,
+  moves,
 }) => {
   const [isComboBuilderExpanded, setIsComboBuilderExpanded] = useState(false);
   
@@ -194,7 +192,7 @@ export const Builder: React.FC<BuilderProps> = ({
           <span className={`expand-icon ${isComboBuilderExpanded ? 'expanded' : ''}`} aria-hidden="true">▼</span>
         </h2>
         <div className="collapsible-content">
-          <VisualComboBuilder character={character} specialMoves={specialMoves} uniqueMoves={uniqueMoves} />
+          <VisualComboBuilder character={character} moves={moves} />
         </div>
       </section>
       
@@ -205,6 +203,7 @@ export const Builder: React.FC<BuilderProps> = ({
           <li><strong>P</strong> → パンチ</li>
           <li><strong>K</strong> → キック</li>
           <li><strong>屈</strong> → しゃがみ状態</li>
+          <li><strong>前ステ、後ろステ</strong> → 前後のステップ</li>
           <li><strong>F消費</strong> → フレーム消費</li>
           <li><strong>DI</strong> → ドライブインパクト</li>
           <li><strong>R</strong> → ドライブラッシュ（生ラッシュ）</li>

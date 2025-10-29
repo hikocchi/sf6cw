@@ -1,33 +1,62 @@
-import type { ComboPart, SpecialMove, UniqueMove } from '../types';
+import type { ComboPart, Move } from '../types';
 
-export const specialMoves: SpecialMove[] = [
+export const moves: Move[] = [
   // Specials
-  { name: '弱 ワールウィンド・ショット', notation: '弱ワール', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '中 ワールウィンド・ショット', notation: '中ワール', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '強 ワールウィンド・ショット', notation: '強ワール', driveCost: 0, saCost: 0, type: 'special' },
-  { name: 'OD ワールウィンド・ショット', notation: 'ODワール', driveCost: 2, saCost: 0, type: 'special' },
-
-  { name: '弱 イーグル・スパイク', notation: '弱スパイク', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '中 イーグル・スパイク', notation: '中スパイク', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '強 イーグル・スパイク', notation: '強スパイク', driveCost: 0, saCost: 0, type: 'special' },
-  { name: 'OD イーグル・スパイク', notation: 'ODスパイク', driveCost: 2, saCost: 0, type: 'special' },
-
-  { name: '弱 アラビアン・サイクロン', notation: '弱ミキサー', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '中 アラビアン・サイクロン', notation: '中ミキサー', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '強 アラビアン・サイクロン', notation: '強ミキサー', driveCost: 0, saCost: 0, type: 'special' },
-  { name: 'OD アラビアン・サイクロン', notation: 'ODミキサー', driveCost: 2, saCost: 0, type: 'special' },
-  
-  { name: 'アラビアン・スカイハイ', notation: 'スカイハイ', driveCost: 0, saCost: 0, type: 'special' },
-  { name: 'OD アラビアン・スカイハイ', notation: 'ODスカイハイ', driveCost: 2, saCost: 0, type: 'special' },
-
+  {
+    id: '001',
+    name: 'ワールウィンド・ショット',
+    type: 'special',
+    variants: [
+      { label: '弱', notation: '弱ワール', driveCost: 0, saCost: 0 },
+      { label: '中', notation: '中ワール', driveCost: 0, saCost: 0 },
+      { label: '強', notation: '強ワール', driveCost: 0, saCost: 0 },
+      { label: 'OD', notation: 'ODワール', driveCost: 2, saCost: 0 },
+    ],
+  },
+  {
+    id: '002',
+    name: 'イーグル・スパイク',
+    type: 'special',
+    variants: [
+      { label: '弱', notation: '弱スパイク', driveCost: 0, saCost: 0 },
+      { label: '中', notation: '中スパイク', driveCost: 0, saCost: 0 },
+      { label: '強', notation: '強スパイク', driveCost: 0, saCost: 0 },
+      { label: 'OD', notation: 'ODスパイク', driveCost: 2, saCost: 0 },
+    ],
+  },
+  {
+    id: '003',
+    name: 'アラビアン・サイクロン',
+    type: 'special',
+    variants: [
+      { label: '弱', notation: '弱ミキサー', driveCost: 0, saCost: 0 },
+      { label: '中', notation: '中ミキサー', driveCost: 0, saCost: 0 },
+      { label: '強', notation: '強ミキサー', driveCost: 0, saCost: 0 },
+      { label: 'OD', notation: 'ODミキサー', driveCost: 2, saCost: 0 },
+    ],
+  },
+  {
+    id: '004',
+    name: 'アラビアン・スカイハイ',
+    type: 'special',
+    variants: [
+      { label: '通常', notation: 'スカイハイ', driveCost: 0, saCost: 0 },
+      { label: 'OD', notation: 'ODスカイハイ', driveCost: 2, saCost: 0 },
+    ],
+  },
   // Super Arts
-  { name: 'SA1 スーパー・ラシード・キック', notation: 'SA1', driveCost: 0, saCost: 1, type: 'sa' },
-  { name: 'SA2 イウサール', notation: 'SA2', driveCost: 0, saCost: 2, type: 'sa' },
-  { name: 'SA3 アルトair', notation: 'SA3', driveCost: 0, saCost: 3, type: 'sa' },
-  { name: 'CA アルトair', notation: 'CA', driveCost: 0, saCost: 3, type: 'sa' },
+  {
+    id: '005',
+    name: 'スーパーアーツ',
+    type: 'sa',
+    variants: [
+      { label: 'SA1', notation: 'SA1', driveCost: 0, saCost: 1 },
+      { label: 'SA2', notation: 'SA2', driveCost: 0, saCost: 2 },
+      { label: 'SA3', notation: 'SA3', driveCost: 0, saCost: 3 },
+      { label: 'CA', notation: 'CA', driveCost: 0, saCost: 3 },
+    ],
+  },
 ];
-
-export const uniqueMoves: UniqueMove[] = [];
 
 export const comboParts: Omit<ComboPart, 'character'>[] = [
   {

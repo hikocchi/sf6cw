@@ -25,7 +25,7 @@ export const App = () => {
   const [character, setCharacter] = useState(() => localStorage.getItem('sf6-cw-character') || AVAILABLE_CHARACTERS[0] || '');
   
   const { isMobileView } = useDeviceState();
-  const { comboParts, sampleCombos, specialMoves, uniqueMoves, isLoading } = useCharacterData(character);
+  const { comboParts, sampleCombos, moves, isLoading } = useCharacterData(character);
   const { tags, handleTagClick, resetFilters, availableTags, filteredParts, dynamicallyAvailableTags } = useFilters(comboParts);
   const { sequence, setSequence, addPartToSequence, removeFromSequence, clearSequence, loadSampleCombo, comboStats } = useSequence();
   const { refs: playerRefs, state: playerState, actions: playerActions } = useVideoPlayer(sequence);
@@ -325,8 +325,7 @@ ${url.toString()}
   handleClear={handleClear}
           isMobileView={isMobileView}
           character={character}
-          specialMoves={specialMoves}
-          uniqueMoves={uniqueMoves}
+          moves={moves}
         />
       </main>
 

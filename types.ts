@@ -7,7 +7,8 @@ export interface ComboPart {
   videoUrl: string;
   order: number;
   damage?: number;
-  endFrameAdvantage?: number;
+  startFrameAdvantage?: number; // このパーツの「開始条件」となる有利フレーム
+  endFrameAdvantage?: number;   // このパーツを使った後の「終了状況」となる有利フレーム
   videoTime?: number[];
   tagType?: string;
   tagCondition?: string[];
@@ -17,6 +18,36 @@ export interface ComboPart {
 
 export interface SequencePart extends ComboPart {
   sequenceId: string;
+}
+
+/**
+ * 技のバリエーションの詳細を定義します。UI上のボタンに対応します。
+ */
+export interface MoveVariant {
+  label: string;
+  notation: string;
+  driveCost?: number;
+  saCost?: number;
+}
+
+/**
+ * 技バリエーションのサブグループを定義します。(例: 奮迅脚の「本体」「派生」)
+ */
+export interface MoveVariantGroup {
+  groupName: string;
+  variants: MoveVariant[];
+}
+
+/**
+ * 技の基本情報を定義します。UI上の大きな括り（例: 「波動拳」）になります。
+ * special/sa技の場合は `variants` を、unique技の場合は `variantGroups` を使用します。
+ */
+export interface Move {
+  id: string;
+  name: string;
+  type: 'special' | 'unique' | 'sa';
+  variants?: MoveVariant[];
+  variantGroups?: MoveVariantGroup[];
 }
 
 export interface SampleCombo {
@@ -37,20 +68,3 @@ export type TagState = 'include';
 export type FilterState = {
   [K in TagCategoryKey]: { [tag: string]: TagState };
 };
-
-export interface SpecialMove {
-  name: string; // 表示名 e.g., "OD波動拳"
-  notation: string; // コンボ文字列 e.g., "OD波動拳"
-  driveCost: number;
-  saCost: number; // in bars
-  type: 'special' | 'sa';
-}
-
-// 奮迅脚のような特殊な派生技やユニークなムーブのための型
-export interface UniqueMove {
-  name: string;       // ボタンの表示名 (e.g., "急停止")
-  notation: string;   // コンボ表記 (e.g., "急停止")
-  driveCost?: number;
-  saCost?: number;
-  group: string;      // UI上のグループ名 (e.g., "奮迅脚派生")
-}

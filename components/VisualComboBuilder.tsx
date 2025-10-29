@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import type { SpecialMove, UniqueMove } from '../types';
+import type { Move } from '../types';
 import {
   ArrowUpLeft, ArrowUp, ArrowUpRight, ArrowLeft, ArrowRight,
   ArrowDownLeft, ArrowDown, ArrowDownRight
@@ -8,8 +8,7 @@ import './VisualComboBuilder.css';
 
 interface VisualComboBuilderProps {
   character: string;
-  specialMoves: SpecialMove[];
-  uniqueMoves: UniqueMove[];
+  moves: Move[];
 }
 
 const DIRECTIONS = [
@@ -44,7 +43,7 @@ const SPECIAL_ACTIONS = [
   { label: 'KK', notation: 'KK', driveCost: 0, saCost: 0 },
 ];
 
-export const VisualComboBuilder: React.FC<VisualComboBuilderProps> = ({ character, specialMoves, uniqueMoves }) => {
+export const VisualComboBuilder: React.FC<VisualComboBuilderProps> = ({ character, moves }) => {
   const [comboString, setComboString] = useState('');
   const [selectedDirection, setSelectedDirection] = useState<string | null>(null);
   const [driveGauge, setDriveGauge] = useState(0);
@@ -93,81 +92,9 @@ export const VisualComboBuilder: React.FC<VisualComboBuilderProps> = ({ characte
     });
   };
 
-  const groupedSpecials = useMemo(() => {
-    const groups = new Map<string, SpecialMove[]>();
-    const specialMovesOnly = specialMoves.filter(m => m.type === 'special');
-    const prefixes = ['弱 ', '中 ', '強 ', 'OD '];
-
-    // Create groups based on base move name
-    for (const move of specialMovesOnly) {
-      let baseName = move.name;
-      for (const prefix of prefixes) {
-        if (move.name.startsWith(prefix)) {
-          baseName = move.name.substring(prefix.length);
-          break;
-        }
-      }
-      
-      if (!groups.has(baseName)) {
-        groups.set(baseName, []);
-      }
-      groups.get(baseName)!.push(move);
-    }
-
-    const getStrengthOrder = (name: string) => {
-        const strengthOrderMap: Record<string, number> = { '弱': 1, '中': 2, '強': 3, 'OD': 4 };
-        const firstPart = name.split(' ')[0];
-        if (firstPart in strengthOrderMap) {
-            return strengthOrderMap[firstPart];
-        }
-        // Handle cases like 'OD 空中竜巻...' where OD is a separate word.
-        if (firstPart === 'OD') return 4;
-        return 0; // For moves without a strength prefix, e.g., '空中竜巻旋風脚'
-    };
-
-    // Sort moves within each group
-    groups.forEach(moves => {
-      moves.sort((a, b) => getStrengthOrder(a.name) - getStrengthOrder(b.name));
-    });
-
-    return Array.from(groups.entries());
-  }, [specialMoves]);
-
-  const characterSAsAndCAs = useMemo(() => {
-    const saMoves = specialMoves.filter(m => m.type === 'sa');
-    saMoves.sort((a, b) => {
-        const getOrder = (name: string) => {
-            if (name.startsWith('SA1')) return 1;
-            if (name.startsWith('SA2')) return 2;
-            if (name.startsWith('SA3')) return 3;
-            if (name.startsWith('CA')) return 4;
-            return 5;
-        };
-        return getOrder(a.name) - getOrder(b.name);
-    });
-    return saMoves;
-  }, [specialMoves]);
-
-  const groupedUniqueMoves = useMemo(() => {
-    if (!uniqueMoves || uniqueMoves.length === 0) return [];
-    const groups = new Map<string, UniqueMove[]>();
-    for (const move of uniqueMoves) {
-      if (!groups.has(move.group)) {
-        groups.set(move.group, []);
-      }
-      groups.get(move.group)!.push(move);
-    }
-    return Array.from(groups.entries());
-  }, [uniqueMoves]);
-
-  const getStrengthLabel = (name: string) => {
-    const prefixes = ['弱', '中', '強', 'OD'];
-    const firstPart = name.split(' ')[0];
-    if (prefixes.includes(firstPart)) {
-        return firstPart;
-    }
-    return '通常'; // Default for non-prefixed moves
-  };
+  const specialMoves = useMemo(() => moves.filter(m => m.type === 'special'), [moves]);
+  const uniqueMoves = useMemo(() => moves.filter(m => m.type === 'unique'), [moves]);
+  const saMoves = useMemo(() => moves.find(m => m.type === 'sa'), [moves]);
 
   return (
     <div className="visual-combo-builder">
@@ -242,13 +169,13 @@ export const VisualComboBuilder: React.FC<VisualComboBuilderProps> = ({ characte
               <h4>必殺技</h4>
             </div>
             <div className="vcb-palette-content vcb-specials-grid">
-              {groupedSpecials.map(([baseName, moves]) => (
-                <div key={baseName} className="vcb-move-group">
-                  <h4>{baseName}</h4>
+              {specialMoves.map(move => (
+                <div key={move.id} className="vcb-move-group">
+                  <h4>{move.name}</h4>
                   <div className="vcb-strength-buttons">
-                    {moves.map(move => (
-                      <button key={move.name} onClick={() => handleInput(move.notation, move.driveCost, move.saCost)}>
-                        {getStrengthLabel(move.name)}
+                    {move.variants?.map(variant => (
+                      <button key={variant.notation} onClick={() => handleInput(variant.notation, variant.driveCost, variant.saCost)}>
+                        {variant.label}
                       </button>
                     ))}
                   </div>
@@ -257,46 +184,51 @@ export const VisualComboBuilder: React.FC<VisualComboBuilderProps> = ({ characte
             </div>
           </div>
           
-           {groupedUniqueMoves.length > 0 && (
+           {uniqueMoves.length > 0 && (
             <div className="vcb-palette-section">
               <div className="vcb-palette-header">
                 <h4>特殊技 / 特殊ムーブ</h4>
               </div>
               <div className="vcb-palette-content vcb-specials-grid">
-                {groupedUniqueMoves.map(([groupName, moves]) => (
-                  <div key={groupName} className="vcb-move-group">
-                    <h4>{groupName}</h4>
-                    <div className="vcb-strength-buttons">
-                      {moves.map(move => (
-                        <button key={move.name} onClick={() => handleInput(move.notation, move.driveCost, move.saCost)}>
-                          {move.name}
-                        </button>
-                      ))}
-                    </div>
+                {uniqueMoves.map(move => (
+                  <div key={move.id} className="vcb-move-group vcb-unique-move-group">
+                    <h4 className="vcb-unique-move-group-title">{move.name}</h4>
+                    {move.variantGroups?.map(group => (
+                      <div key={group.groupName}>
+                        {(move.variantGroups?.length || 0) > 1 && <h5 className="vcb-variant-group-name">{group.groupName}</h5>}
+                        <div className="vcb-strength-buttons">
+                          {group.variants.map(variant => (
+                            <button key={variant.notation} onClick={() => handleInput(variant.notation, variant.driveCost, variant.saCost)}>
+                              {variant.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          <div className="vcb-palette-section">
-            <div className="vcb-palette-header">
-              <h4>スーパーアーツ</h4>
-            </div>
-            <div className="vcb-palette-content vcb-sa-palette-content">
-              {characterSAsAndCAs.length > 0 && (
+          {saMoves && (
+            <div className="vcb-palette-section">
+              <div className="vcb-palette-header">
+                <h4>{saMoves.name}</h4>
+              </div>
+              <div className="vcb-palette-content vcb-sa-palette-content">
                 <div className="vcb-move-group">
                   <div className="vcb-strength-buttons vcb-sa-buttons">
-                    {characterSAsAndCAs.map(move => (
-                      <button key={move.name} onClick={() => handleInput(move.notation, move.driveCost, move.saCost)}>
-                        {move.name.startsWith('CA') ? 'CA' : move.notation}
+                    {saMoves.variants?.map(variant => (
+                      <button key={variant.notation} onClick={() => handleInput(variant.notation, variant.driveCost, variant.saCost)}>
+                        {variant.label}
                       </button>
                     ))}
                   </div>
                 </div>
-              )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

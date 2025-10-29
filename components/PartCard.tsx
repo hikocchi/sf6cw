@@ -5,8 +5,9 @@ import './PartCard.css';
 export const PartCard: React.FC<{ part: ComboPart; onPartClick: (part: ComboPart, event: React.MouseEvent<HTMLDivElement>) => void; }> = ({ part, onPartClick }) => {
   const partTags = [
     part.tagType,
-    ...(part.tagCondition || []),
+    ...(part.tagCondition || []).filter(tag => !tag.endsWith('F状況')), // 自動生成タグは表示しない
     part.tagDriveGauge && `D: ${part.tagDriveGauge}`,
+    // FIX: Corrected property access from `part.saGauge` to `part.tagSaGauge`.
     part.tagSaGauge && `SA: ${part.tagSaGauge}`
   ].filter(Boolean) as string[];
 
@@ -29,12 +30,22 @@ export const PartCard: React.FC<{ part: ComboPart; onPartClick: (part: ComboPart
             💥 {part.damage}
           </span>
         )}
+        {part.startFrameAdvantage != null && (
+          <span
+            className="info-item frame-advantage start"
+            aria-label={`開始フレーム: ${part.startFrameAdvantage}`}
+          >
+            <span className="label">▶ 開始:</span>
+            <span className="value">{part.startFrameAdvantage > 0 ? `+${part.startFrameAdvantage}` : part.startFrameAdvantage}F</span>
+          </span>
+        )}
         {part.endFrameAdvantage != null && (
           <span
-            className={`info-item frame-advantage ${part.endFrameAdvantage >= 0 ? 'positive' : 'negative'}`}
-            aria-label={`Frame advantage: ${part.endFrameAdvantage}`}
+            className={`info-item frame-advantage end ${part.endFrameAdvantage >= 0 ? 'positive' : 'negative'}`}
+            aria-label={`終了フレーム: ${part.endFrameAdvantage}`}
           >
-            ⏰ {part.endFrameAdvantage > 0 ? `+${part.endFrameAdvantage}` : part.endFrameAdvantage}
+            <span className="label">⏰ 終了:</span>
+            <span className="value">{part.endFrameAdvantage > 0 ? `+${part.endFrameAdvantage}` : part.endFrameAdvantage}F</span>
           </span>
         )}
       </div>

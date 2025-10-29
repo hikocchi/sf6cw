@@ -1,38 +1,72 @@
-import type { ComboPart, SpecialMove, UniqueMove } from '../types';
+import type { ComboPart, Move } from '../types';
 
-export const specialMoves: SpecialMove[] = [
+export const moves: Move[] = [
   // Specials
-  { name: '弱 波動拳', notation: '弱波動拳', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '中 波動拳', notation: '中波動拳', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '強 波動拳', notation: '強波動拳', driveCost: 0, saCost: 0, type: 'special' },
-  { name: 'OD 波動拳', notation: 'OD波動拳', driveCost: 2, saCost: 0, type: 'special' },
-
-  { name: '弱 昇竜拳', notation: '弱昇竜', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '中 昇竜拳', notation: '中昇竜', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '強 昇竜拳', notation: '強昇竜', driveCost: 0, saCost: 0, type: 'special' },
-  { name: 'OD 昇竜拳', notation: 'OD昇竜', driveCost: 2, saCost: 0, type: 'special' },
-
-  { name: '弱 竜巻旋風脚', notation: '弱竜巻', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '中 竜巻旋風脚', notation: '中竜巻', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '強 竜巻旋風脚', notation: '強竜巻', driveCost: 0, saCost: 0, type: 'special' },
-  { name: 'OD 竜巻旋風脚', notation: 'OD竜巻', driveCost: 2, saCost: 0, type: 'special' },
-
-  { name: '弱 足刀蹴り', notation: '弱足刀', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '中 足刀蹴り', notation: '中足刀', driveCost: 0, saCost: 0, type: 'special' },
-  { name: '強 足刀蹴り', notation: '強足刀', driveCost: 0, saCost: 0, type: 'special' },
-  { name: 'OD 足刀蹴り', notation: 'OD足刀', driveCost: 2, saCost: 0, type: 'special' },
-
-  { name: '空中竜巻旋風脚', notation: '空中竜巻', driveCost: 0, saCost: 0, type: 'special' },
-  { name: 'OD 空中竜巻旋風脚', notation: 'OD空中竜巻', driveCost: 2, saCost: 0, type: 'special' },
-
-  // Super Arts
-  { name: 'SA1 真空波動拳', notation: 'SA1', driveCost: 0, saCost: 1, type: 'sa' },
-  { name: 'SA2 真波掌撃', notation: 'SA2', driveCost: 0, saCost: 2, type: 'sa' },
-  { name: 'SA3 真・昇龍拳', notation: 'SA3', driveCost: 0, saCost: 3, type: 'sa' },
-  { name: 'CA 真・昇龍拳', notation: 'CA真・昇龍拳', driveCost: 0, saCost: 3, type: 'sa' },
+  {
+    id: '001',
+    name: '波動拳',
+    type: 'special',
+    variants: [
+      { label: '弱', notation: '弱波動', driveCost: 0, saCost: 0 },
+      { label: '中', notation: '中波動', driveCost: 0, saCost: 0 },
+      { label: '強', notation: '強波動', driveCost: 0, saCost: 0 },
+      { label: 'OD', notation: 'OD波動', driveCost: 2, saCost: 0 },
+    ],
+  },
+  {
+    id: '002',
+    name: '昇竜拳',
+    type: 'special',
+    variants: [
+      { label: '弱', notation: '弱昇竜', driveCost: 0, saCost: 0 },
+      { label: '中', notation: '中昇竜', driveCost: 0, saCost: 0 },
+      { label: '強', notation: '強昇竜', driveCost: 0, saCost: 0 },
+      { label: 'OD', notation: 'OD昇竜', driveCost: 2, saCost: 0 },
+    ],
+  },
+  {
+    id: '003',
+    name: '竜巻',
+    type: 'special',
+    variants: [
+      { label: '弱', notation: '弱竜巻', driveCost: 0, saCost: 0 },
+      { label: '中', notation: '中竜巻', driveCost: 0, saCost: 0 },
+      { label: '強', notation: '強竜巻', driveCost: 0, saCost: 0 },
+      { label: 'OD', notation: 'OD竜巻', driveCost: 2, saCost: 0 },
+    ],
+  },
+  {
+    id: '004',
+    name: '足刀',
+    type: 'special',
+    variants: [
+      { label: '弱', notation: '弱足刀', driveCost: 0, saCost: 0 },
+      { label: '中', notation: '中足刀', driveCost: 0, saCost: 0 },
+      { label: '強', notation: '強足刀', driveCost: 0, saCost: 0 },
+      { label: 'OD', notation: 'OD足刀', driveCost: 2, saCost: 0 },
+    ],
+  },
+  {
+    id: '005',
+    name: '空中竜巻',
+    type: 'special',
+    variants: [
+      { label: '弱', notation: '弱空中竜巻', driveCost: 0, saCost: 0 },
+      { label: 'OD', notation: 'OD空中竜巻', driveCost: 2, saCost: 0 },
+    ],
+  },
+  {
+    id: '006',
+    name: 'スーパーアーツ',
+    type: 'sa',
+    variants: [
+      { label: 'SA1', notation: 'SA1', driveCost: 0, saCost: 1 },
+      { label: 'SA2', notation: 'SA2', driveCost: 0, saCost: 2 },
+      { label: 'SA3', notation: 'SA3', driveCost: 0, saCost: 3 },
+      { label: 'CA', notation: 'CA', driveCost: 0, saCost: 3 },
+    ],
+  },
 ];
-
-export const uniqueMoves: UniqueMove[] = [];
 
 export const comboParts: Omit<ComboPart, 'character'>[] = [
   // --- 始動 (Starters) ---
@@ -46,7 +80,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     endFrameAdvantage: 37,
     videoTime: [0, 3.0],
     tagType: '始動',
-    tagCondition: ['+37F状況'],
+    tagCondition: [],
   },
   {
     id: 'ryu-005',
@@ -58,7 +92,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     endFrameAdvantage: 37,
     videoTime: [0, 3.0],
     tagType: '始動',
-    tagCondition: ['+37F状況'],
+    tagCondition: [],
     tagDriveGauge: '3',
   },
   {
@@ -71,7 +105,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     endFrameAdvantage: 37,
     videoTime: [0, 3.6],
     tagType: '始動',
-    tagCondition: ['カウンター始動', '+37F状況'],
+    tagCondition: ['カウンター始動'],
     tagDriveGauge: '2',
   },
   {
@@ -109,7 +143,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     endFrameAdvantage: 37,
     videoTime: [0, 3.8],
     tagType: '始動',
-    tagCondition: ['画面端','ドライブインパクト始動', '+37F状況'],
+    tagCondition: ['画面端','ドライブインパクト始動'],
   },
   {
     id: 'ryu-009',
@@ -121,7 +155,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     endFrameAdvantage: 37,
     videoTime: [0, 4.4],
     tagType: '始動',
-    tagCondition: ['+37F状況'],
+    tagCondition: [],
     tagDriveGauge: '2',
   },
   {
@@ -134,7 +168,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     endFrameAdvantage: 37,
     videoTime: [0, 5.7],
     tagType: '始動',
-    tagCondition: ['ドライブインパクト始動','パニカン始動', '+37F状況'],
+    tagCondition: ['ドライブインパクト始動','パニカン始動'],
     tagDriveGauge: '2',
   },
   {
@@ -147,7 +181,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     endFrameAdvantage: 37,
     videoTime: [0, 4.0],
     tagType: '始動',
-    tagCondition: ['パニカン始動', '+37F状況'],
+    tagCondition: ['パニカン始動'],
     tagDriveGauge: '2',
   },
   {
@@ -160,7 +194,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     endFrameAdvantage: 37,
     videoTime: [0, 3.7],
     tagType: '始動',
-    tagCondition: ['画面端', 'パニカン始動', '+37F状況'],
+    tagCondition: ['画面端', 'パニカン始動'],
     tagDriveGauge: '2',
   },
   {
@@ -186,7 +220,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     endFrameAdvantage: 37,
     videoTime: [0, 3.1],
     tagType: '始動',
-    tagCondition: ['画面端', '+37F状況'],
+    tagCondition: ['画面端'],
     tagDriveGauge: '2',
   },
   {
@@ -199,7 +233,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     endFrameAdvantage: 37,
     videoTime: [0, 5.6],
     tagType: '始動',
-    tagCondition: ['画面端','電刃練気', '+37F状況'],
+    tagCondition: ['画面端','電刃練気'],
     tagDriveGauge: '2',
   },
   {
@@ -212,7 +246,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     endFrameAdvantage: 37,
     videoTime: [0, 4.2],
     tagType: '始動',
-    tagCondition: ['画面中央','パニカン始動', '+37F状況'],
+    tagCondition: ['画面中央','パニカン始動'],
     tagDriveGauge: '2',
   },
   {
@@ -250,7 +284,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     endFrameAdvantage: 37,
     videoTime: [0, 9.9],
     tagType: '始動',
-    tagCondition: ['画面端','スタン始動', '+37F状況'],
+    tagCondition: ['画面端','スタン始動'],
     tagDriveGauge: '1',
     tagSaGauge: '2',
   },
@@ -264,7 +298,7 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     endFrameAdvantage: 37,
     videoTime: [0, 7.2],
     tagType: '始動',
-    tagCondition: ['画面端','パニカン始動', '+37F状況'],
+    tagCondition: ['画面端','パニカン始動'],
     tagDriveGauge: '1',
     tagSaGauge: '2',
   },
@@ -303,10 +337,11 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-002.mp4',
     order: 500,
     damage: 1200,
+    startFrameAdvantage: 37,
     endFrameAdvantage: 17,
     videoTime: [0.3],
     tagType: '起き攻め',
-    tagCondition: ['+37F状況'],
+    tagCondition: [],
   },
   {
     id: 'ryu-034',
@@ -315,9 +350,10 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-034.mp4',
     order: 510,
     damage: 1200,
+    startFrameAdvantage: 37,
     endFrameAdvantage: 17,
     tagType: '起き攻め',
-    tagCondition: ['+37F状況', '画面端'],
+    tagCondition: ['画面端'],
   },
   {
     id: 'ryu-043',
@@ -326,10 +362,11 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-043.mp4',
     order: 520,
     damage: 1200,
+    startFrameAdvantage: 32,
     endFrameAdvantage: 17,
     videoTime: [2.2, 5.1],
     tagType: '起き攻め',
-    tagCondition: ['画面端', '+32F状況'],
+    tagCondition: ['画面端'],
   },
   {
     id: 'ryu-045',
@@ -338,10 +375,11 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-045.mp4',
     order: 530,
     damage: 1200,
+    startFrameAdvantage: 17,
     endFrameAdvantage: 17,
     videoTime: [0, 5.8],
     tagType: '起き攻め',
-    tagCondition: ['画面端', '+17F状況'],
+    tagCondition: ['画面端'],
   },
   {
     id: 'ryu-032',
@@ -350,10 +388,11 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-032.mp4',
     order: 540,
     damage: 1720,
+    startFrameAdvantage: 37,
     endFrameAdvantage: 37,
     videoTime: [0, 2.8],
     tagType: '起き攻め',
-    tagCondition: ['+37F状況', '画面端'],
+    tagCondition: ['画面端'],
   },
   {
     id: 'ryu-003',
@@ -362,10 +401,11 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-003.mp4',
     order: 550,
     damage: 2610,
+    startFrameAdvantage: 37,
     endFrameAdvantage: 37,
     videoTime: [0.8],
     tagType: '起き攻め',
-    tagCondition: ['+37F状況'],
+    tagCondition: [],
     tagDriveGauge: '2',
   },
   {
@@ -375,10 +415,11 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-033.mp4',
     order: 560,
     damage: 3280,
+    startFrameAdvantage: 37,
     endFrameAdvantage: 32,
     videoTime: [0, 3.8],
     tagType: '起き攻め',
-    tagCondition: ['+37F状況', '画面端'],
+    tagCondition: ['画面端'],
   },
   {
     id: 'ryu-035',
@@ -387,9 +428,10 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-035.mp4',
     order: 570,
     damage: 3280,
+    startFrameAdvantage: 37,
     endFrameAdvantage: 32,
     tagType: '起き攻め',
-    tagCondition: ['+37F状況', '画面端'],
+    tagCondition: ['画面端'],
   },
   {
     id: 'ryu-044',
@@ -398,10 +440,11 @@ export const comboParts: Omit<ComboPart, 'character'>[] = [
     videoUrl: 'https://storage.googleapis.com/sf6cmbwev/ryu/ryu-044.mp4',
     order: 580,
     damage: 3400,
+    startFrameAdvantage: 32,
     endFrameAdvantage: 32,
     videoTime: [0, 3.7],
     tagType: '起き攻め',
-    tagCondition: ['画面端', '+32F状況'],
+    tagCondition: ['画面端'],
   },
 
   // --- リーサル (Lethal) ---

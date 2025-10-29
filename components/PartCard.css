@@ -58,10 +58,30 @@
   color: var(--error-color);
 }
 
-.frame-advantage.positive {
+.info-item.frame-advantage {
+  gap: 0.5rem;
+}
+
+.frame-advantage .label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--text-secondary-color);
+  font-weight: 400;
+}
+
+.frame-advantage .value {
+  font-weight: bold;
+}
+
+.frame-advantage.start .value {
+    color: var(--text-color);
+}
+
+.frame-advantage.end.positive .value {
   color: var(--positive-color);
 }
 
-.frame-advantage.negative {
+.frame-advantage.end.negative .value {
   color: var(--error-color);
 }
