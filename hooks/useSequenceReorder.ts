@@ -1,4 +1,3 @@
-// FIX: Import React to provide the namespace for types like React.Dispatch, React.DragEvent, etc.
 import React, { useState, useRef, useCallback } from 'react';
 import type { SequencePart } from '../types';
 

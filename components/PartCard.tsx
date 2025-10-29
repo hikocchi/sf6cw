@@ -7,7 +7,6 @@ export const PartCard: React.FC<{ part: ComboPart; onPartClick: (part: ComboPart
     part.tagType,
     ...(part.tagCondition || []).filter(tag => !tag.endsWith('F状況')), // 自動生成タグは表示しない
     part.tagDriveGauge && `D: ${part.tagDriveGauge}`,
-    // FIX: Corrected property access from `part.saGauge` to `part.tagSaGauge`.
     part.tagSaGauge && `SA: ${part.tagSaGauge}`
   ].filter(Boolean) as string[];
 
