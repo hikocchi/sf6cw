@@ -19,29 +19,38 @@ export const useVideoPlayer = (sequence: SequencePart[]) => {
     setIsSequencePaused(false);
   }, []);
 
-  const playSequence = () => {
+  const playSequence = useCallback(() => {
     if (sequence.length === 0) return;
-    setIsSequencePaused(false);
-    if (currentPlayingIndex !== null) { // Resume
+
+    // If playback is paused, resume from the current part.
+    // Otherwise (if stopped or at the end), always start from the beginning.
+    if (isSequencePausedRef.current && currentPlayingIndex !== null) {
+      setIsSequencePaused(false); // This will trigger a re-render and update the ref
       const isYouTube = sequence[currentPlayingIndex]?.videoUrl.includes('youtube.com');
-      if (isYouTube && ytPlayerRef.current?.playVideo) ytPlayerRef.current.playVideo();
-      else if (videoRef.current) videoRef.current.play().catch(console.error);
-    } else { // Play from start
+      if (isYouTube && ytPlayerRef.current?.playVideo) {
+        ytPlayerRef.current.playVideo();
+      } else if (videoRef.current) {
+        videoRef.current.play().catch(console.error);
+      }
+    } else {
+      // Start from the beginning
+      setIsSequencePaused(false);
       setCurrentPlayingIndex(0);
     }
-  };
+  }, [sequence, currentPlayingIndex]);
 
-  const pauseSequence = () => {
+  const pauseSequence = useCallback(() => {
     if (currentPlayingIndex === null) return;
     setIsSequencePaused(true);
     const isYouTube = sequence[currentPlayingIndex]?.videoUrl.includes('youtube.com');
     if (isYouTube && ytPlayerRef.current?.pauseVideo) ytPlayerRef.current.pauseVideo();
     else if (videoRef.current) videoRef.current.pause();
-  };
+  }, [sequence, currentPlayingIndex]);
   
-  const rewindSequence = () => {
+  const rewindSequence = useCallback(() => {
     if (currentPlayingIndex === null) return;
     const currentPart = sequence[currentPlayingIndex];
+    if (!currentPart) return;
     const startTime = currentPart.videoTime?.[0] || 0;
     const isYouTube = currentPart.videoUrl.includes('youtube.com');
     if (isYouTube && ytPlayerRef.current) {
@@ -50,7 +59,7 @@ export const useVideoPlayer = (sequence: SequencePart[]) => {
     } else if (videoRef.current) {
       videoRef.current.currentTime = Math.max(startTime, videoRef.current.currentTime - REWIND_SECONDS);
     }
-  };
+  }, [sequence, currentPlayingIndex]);
   
   useEffect(() => {
     const hasYouTubeVideo = sequence.some(part => part.videoUrl.includes('youtube.com') || part.videoUrl.includes('youtu.be')) || HOW_TO_USE_VIDEO_ID;
@@ -170,9 +179,16 @@ export const useVideoPlayer = (sequence: SequencePart[]) => {
     };
   }, [currentPlayingIndex, isYtApiReady, currentVideoUrl, isCurrentVideoYouTube, getYouTubeVideoId, sequence, hardStopSequence]);
   
+  const actions = useMemo(() => ({
+    playSequence,
+    pauseSequence,
+    rewindSequence,
+    hardStopSequence,
+  }), [playSequence, pauseSequence, rewindSequence, hardStopSequence]);
+
   return {
     refs: { videoRef, ytPlayerRef, ytPlayerContainerRef },
     state: { currentPlayingIndex, isSequencePaused, isYtApiReady, currentVideoUrl, isCurrentVideoYouTube },
-    actions: { playSequence, pauseSequence, rewindSequence, hardStopSequence }
+    actions,
   };
 };

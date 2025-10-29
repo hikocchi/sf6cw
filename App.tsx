@@ -39,7 +39,6 @@ export const App = () => {
   const [showCopyFeedback, setShowCopyFeedback] = useState(false);
   const [sortOrder, setSortOrder] = useState<SortOrder>('default');
 
-
   const didRestoreFromUrl = useRef(false);
   const didRestoreSession = useRef(false);
   const sequenceListRef = useRef<HTMLDivElement>(null);
@@ -151,8 +150,6 @@ export const App = () => {
         }
     }
 
-    // Add part to sequence
-    playerActions.hardStopSequence();
     addPartToSequence(part);
   };
 
