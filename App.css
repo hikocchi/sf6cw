@@ -67,19 +67,24 @@ main {
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+
+.character-select,
+.library {
+  gap: 0.5rem;
+}
+
+.builder {
+  gap: 1rem;
+  overflow: hidden; /* Prevent content from overflowing */
+}
+
 
 .library {
   flex-grow: 1; /* Allow library to fill remaining space in sidebar */
   min-height: 0; /* Fix flexbox overflow issue */
 }
-
-.builder {
-  overflow: hidden; /* Prevent content from overflowing */
-}
-
 
 h2 {
   font-family: var(--font-primary);
@@ -184,6 +189,7 @@ select#character-filter {
   cursor: pointer;
   transition: color 0.2s ease, border-color 0.2s ease;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .tab-button:hover:not(:disabled) {
@@ -350,6 +356,57 @@ select#character-filter {
 
 .tag-filter-button.active.include::before {
   content: '✓';
+}
+
+.library-controls {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.sort-control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.sort-control-group h4 {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary-color);
+  margin-bottom: 0.25rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid #444;
+}
+
+.sort-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.sort-option-button {
+  flex: 1;
+  background-color: #4f4f4f;
+  color: var(--text-color);
+  border: 1px solid #666;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  text-align: center;
+}
+
+.sort-option-button:hover {
+  background-color: #666;
+}
+
+.sort-option-button.active {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #000;
+  font-weight: 500;
 }
 
 .parts-list {

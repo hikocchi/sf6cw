@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { ComboPart, SampleCombo, FavoriteCombo, FilterState, TagCategoryKey } from '../types';
+import type { SortOrder } from '../App';
 import { TAG_CATEGORIES, INITIAL_PARTS_LIMIT } from '../constants';
 import { PartCard } from './PartCard';
 
@@ -24,6 +25,8 @@ interface SidebarProps {
   handleShowMoreClick: () => void;
   showAllParts: boolean;
   characterFavorites: FavoriteCombo[];
+  sortOrder: SortOrder;
+  onSortChange: React.Dispatch<React.SetStateAction<SortOrder>>;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -47,6 +50,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   handleShowMoreClick,
   showAllParts,
   characterFavorites,
+  sortOrder,
+  onSortChange,
 }) => {
   const [isCharSelectExpanded, setIsCharSelectExpanded] = useState(true);
   const [isLibraryExpanded, setIsLibraryExpanded] = useState(true);
@@ -74,7 +79,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="collapsible-content">
           <div className="filters">
             <div className="filter-group">
-              <label htmlFor="character-filter">Character</label>
               <select id="character-filter" name="character" value={character} onChange={handleCharacterChange}>
                 {availableCharacters.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
@@ -165,6 +169,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       </div>
                     )
                   })}
+                </div>
+                <div className="library-controls">
+                  <div className="sort-control-group">
+                    <h4>ダメージ順並び替え</h4>
+                    <div className="sort-buttons">
+                        <button
+                            className={`sort-option-button ${sortOrder === 'damage_asc' ? 'active' : ''}`}
+                            onClick={() => onSortChange(prev => prev === 'damage_asc' ? 'default' : 'damage_asc')}
+                        >
+                            昇順
+                        </button>
+                        <button
+                            className={`sort-option-button ${sortOrder === 'damage_desc' ? 'active' : ''}`}
+                            onClick={() => onSortChange(prev => prev === 'damage_desc' ? 'default' : 'damage_desc')}
+                        >
+                            降順
+                        </button>
+                    </div>
+                  </div>
                 </div>
                 <div className="parts-list">
                   {isLoading ? <div className="loading-spinner"></div> : 

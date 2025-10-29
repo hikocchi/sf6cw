@@ -19,6 +19,8 @@ import type { ComboPart, SampleCombo, FavoriteCombo, SequencePart } from './type
 import './App.css';
 import './components/Modal.css';
 
+export type SortOrder = 'default' | 'damage_desc' | 'damage_asc';
+
 export const App = () => {
   const [character, setCharacter] = useState(() => localStorage.getItem('sf6-cw-character') || AVAILABLE_CHARACTERS[0] || '');
   
@@ -35,6 +37,7 @@ export const App = () => {
   const [isHowToModalOpen, setIsHowToModalOpen] = useState(false);
   const [isSaveFavoriteModalOpen, setIsSaveFavoriteModalOpen] = useState(false);
   const [showCopyFeedback, setShowCopyFeedback] = useState(false);
+  const [sortOrder, setSortOrder] = useState<SortOrder>('default');
 
 
   const didRestoreFromUrl = useRef(false);
@@ -111,6 +114,7 @@ export const App = () => {
   const handleCharacterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setCharacter(e.target.value);
     resetFilters();
+    setSortOrder('default');
     clearSequence();
     playerActions.hardStopSequence();
   };
@@ -243,9 +247,19 @@ ${url.toString()}
     });
   };
 
+  const sortedParts = useMemo(() => {
+    const sorted = [...filteredParts];
+    if (sortOrder === 'damage_asc') {
+      sorted.sort((a, b) => (a.damage || 0) - (b.damage || 0));
+    } else if (sortOrder === 'damage_desc') {
+      sorted.sort((a, b) => (b.damage || 0) - (a.damage || 0));
+    }
+    return sorted;
+  }, [filteredParts, sortOrder]);
+
   const displayedParts = useMemo(() => {
-    return showAllParts ? filteredParts : filteredParts.slice(0, INITIAL_PARTS_LIMIT);
-  }, [filteredParts, showAllParts]);
+    return showAllParts ? sortedParts : sortedParts.slice(0, INITIAL_PARTS_LIMIT);
+  }, [sortedParts, showAllParts]);
   
   const characterFavorites = useMemo(() => {
     return favorites.filter(f => f.character === character);
@@ -292,6 +306,8 @@ ${url.toString()}
           handleShowMoreClick={handleShowMoreClick}
           showAllParts={showAllParts}
           characterFavorites={characterFavorites}
+          sortOrder={sortOrder}
+          onSortChange={setSortOrder}
         />
         <Builder
           playerState={playerState}
