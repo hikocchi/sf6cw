@@ -23,9 +23,8 @@ export const useVideoPlayer = (sequence: SequencePart[]) => {
     if (sequence.length === 0) return;
 
     // If playback is paused, resume from the current part.
-    // Otherwise (if stopped or at the end), always start from the beginning.
     if (isSequencePausedRef.current && currentPlayingIndex !== null) {
-      setIsSequencePaused(false); // This will trigger a re-render and update the ref
+      setIsSequencePaused(false);
       const isYouTube = sequence[currentPlayingIndex]?.videoUrl.includes('youtube.com');
       if (isYouTube && ytPlayerRef.current?.playVideo) {
         ytPlayerRef.current.playVideo();
@@ -33,7 +32,7 @@ export const useVideoPlayer = (sequence: SequencePart[]) => {
         videoRef.current.play().catch(console.error);
       }
     } else {
-      // Start from the beginning
+      // Otherwise (if stopped or at the end), always start from the beginning.
       setIsSequencePaused(false);
       setCurrentPlayingIndex(0);
     }
@@ -103,7 +102,7 @@ export const useVideoPlayer = (sequence: SequencePart[]) => {
     const startTime = currentPart.videoTime?.[0] || 0;
     const endTime = currentPart.videoTime?.[1];
     const isLastPartInSequence = currentPlayingIndex === sequence.length - 1;
-    const shouldCheckEndTime = endTime !== undefined && !isLastPartInSequence;
+    const shouldCheckEndTime = endTime !== undefined && endTime > startTime && !isLastPartInSequence;
 
     const videoElement = videoRef.current;
 
