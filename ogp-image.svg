@@ -1,0 +1,29 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Teko:wght@700&amp;family=Roboto:wght@400;500&amp;display=swap');
+    </style>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#1a1a1a"/>
+
+  <!-- Decorative background elements -->
+  <path d="M-100 630 Q 300 300 600 630 T 1300 630" fill="none" stroke="#2a2a2a" stroke-width="150" opacity="0.5"/>
+  <path d="M-100 0 Q 300 330 600 0 T 1300 0" fill="none" stroke="#2a2a2a" stroke-width="150" opacity="0.5"/>
+
+  <!-- Main Title -->
+  <text x="50%" y="280" dominant-baseline="middle" text-anchor="middle" font-family="'Teko', sans-serif" font-size="150" font-weight="700" fill="#ffc107" letter-spacing="8">
+    SF6 COMBO WEAVER
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="50%" y="380" dominant-baseline="middle" text-anchor="middle" font-family="'Roboto', sans-serif" font-size="32" fill="#f0f0f0" letter-spacing="1">
+    Street Fighter 6のコンボを自由に組み合わせて動画で確認できるツール
+  </text>
+
+  <!-- Flair: combo notation example -->
+  <text x="50%" y="480" dominant-baseline="middle" text-anchor="middle" font-family="'Roboto', sans-serif" font-size="28" fill="#a0a0a0">
+    屈中K &gt; CR &gt; 強P &gt; 奮迅龍尾 &gt; SA3
+  </text>
+</svg>
